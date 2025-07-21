@@ -1,3 +1,5 @@
+import moment = require('moment-timezone');
+
 /**
  * Centralized logging utility for the Discord bot
  * Handles different log levels and environment-based logging
@@ -15,13 +17,16 @@ export class Logger {
   private static logLevel = Logger.isDevelopment
     ? LogLevel.DEBUG
     : LogLevel.WARN;
+  
+  // Default timezone - can be configured via environment variable
+  private static timezone = process.env.LOG_TIMEZONE || 'Europe/Berlin';
 
   private static formatMessage(
     level: string,
     category: string,
     message: string
   ): string {
-    const timestamp = new Date().toISOString();
+    const timestamp = moment().tz(Logger.timezone).format('YYYY-MM-DD HH:mm:ss z');
     return `[${timestamp}] [${level}] [${category}] ${message}`;
   }
 
@@ -123,5 +128,25 @@ export class Logger {
    */
   static isDev(): boolean {
     return Logger.isDevelopment;
+  }
+
+  /**
+   * Set timezone for logging timestamps
+   */
+  static setTimezone(timezone: string): void {
+    // Validate timezone
+    if (moment.tz.zone(timezone)) {
+      Logger.timezone = timezone;
+      Logger.info('LOGGER', `Timezone set to: ${timezone}`);
+    } else {
+      Logger.warn('LOGGER', `Invalid timezone: ${timezone}. Using default: ${Logger.timezone}`);
+    }
+  }
+
+  /**
+   * Get current timezone
+   */
+  static getTimezone(): string {
+    return Logger.timezone;
   }
 }

@@ -7,22 +7,45 @@ export interface IServerStats extends Document {
   createdAt: Date;
   updatedAt: Date;
 
-  // Instance methods
+  // Instance methods with detailed descriptions
+
+  /** Increment the message count for a specific text channel */
   incrementTextChannel(channelId: string, amount?: number): void;
+
+  /** Increment the activity count for a specific voice channel */
   incrementVoiceChannel(channelId: string, amount?: number): void;
+
+  /** Get the message count for a specific text channel */
   getTextChannelStats(channelId: string): number;
+
+  /** Get the activity count for a specific voice channel */
   getVoiceChannelStats(channelId: string): number;
+
+  /** Get the total number of messages across all text channels */
   getTotalTextMessages(): number;
+
+  /** Get the total voice activity across all voice channels */
   getTotalVoiceActivity(): number;
+
+  /** Get the most active text channel with its message count */
   getMostActiveTextChannel(): { channelId: string; count: number } | null;
+
+  /** Get the most active voice channel with its activity count */
   getMostActiveVoiceChannel(): { channelId: string; count: number } | null;
+
+  /** Get all text channels sorted by message count (descending) */
   getAllTextChannelsSorted(): { channelId: string; count: number }[];
+
+  /** Get all voice channels sorted by activity count (descending) */
   getAllVoiceChannelsSorted(): { channelId: string; count: number }[];
 }
 
 // Interface for static methods
 export interface IServerStatsModel extends Model<IServerStats> {
+  /** Find server stats by guild ID */
   findByGuild(guildId: string): Promise<IServerStats | null>;
+
+  /** Create new server stats or update existing ones */
   createOrUpdate(
     guildId: string,
     updates: Partial<IServerStats>

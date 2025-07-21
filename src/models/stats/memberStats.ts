@@ -12,25 +12,48 @@ export interface IMemberStats extends Document {
   createdAt: Date;
   updatedAt: Date;
 
-  // Instance methods
+  // Instance methods with detailed descriptions
+
+  /** Add XP to the member and check for level up */
   addXP(amount: number): boolean;
+
+  /** Calculate the level based on given XP amount */
   calculateLevelFromXP(xp: number): number;
+
+  /** Get the XP required to reach a specific level */
   getXPRequiredForLevel(level: number): number;
+
+  /** Get the total XP required to reach a specific level from level 1 */
   getTotalXPForLevel(level: number): number;
+
+  /** Get the remaining XP needed to reach the next level */
   getXPUntilNextLevel(): number;
+
+  /** Get the progress to next level as a decimal (0.0 to 1.0) */
   getLevelProgress(): number;
+
+  /** Increment the message count for a specific text channel */
   incrementTextChannel(channelId: string): void;
+
+  /** Add voice time (in seconds) for a specific voice channel */
   addVoiceTime(channelId: string, timeInSeconds: number): void;
 }
 
 // Interface for static methods
 export interface IMemberStatsModel extends Model<IMemberStats> {
+  /** Find member stats by guild and user ID */
   findByGuildAndUser(
     guildId: string,
     userId: string
   ): Promise<IMemberStats | null>;
+
+  /** Get top members by XP in a guild */
   getTopByXP(guildId: string, limit?: number): Promise<IMemberStats[]>;
+
+  /** Get top members by level in a guild */
   getTopByLevel(guildId: string, limit?: number): Promise<IMemberStats[]>;
+
+  /** Get all members in a guild sorted by level and XP */
   getAllByGuild(guildId: string): Promise<IMemberStats[]>;
 }
 

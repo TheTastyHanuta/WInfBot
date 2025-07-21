@@ -7,7 +7,6 @@ config();
 
 const commands = [];
 
-// Lade alle Commands
 const commandFolders = readdirSync(join(__dirname, 'commands'));
 
 for (const folder of commandFolders) {
@@ -23,15 +22,12 @@ for (const folder of commandFolders) {
     }
 }
 
-// REST Client erstellen
 const rest = new REST().setToken(process.env.BOT_TOKEN!);
 
-// Commands registrieren
 (async () => {
     try {
         console.log(`Registriere ${commands.length} Slash Commands...`);
 
-        // Für globale Commands (empfohlen für Production)
         const data = await rest.put(
             Routes.applicationCommands(process.env.CLIENT_ID!),
             { body: commands }

@@ -5,14 +5,12 @@ import { join } from 'path';
 
 config();
 
-// Erweitere den Client um eine commands Collection
 declare module 'discord.js' {
     export interface Client {
         commands: Collection<string, any>;
     }
 }
 
-// Erstelle den Client mit den nötigen Intents
 const client = new Client({
     intents: [
         GatewayIntentBits.Guilds,
@@ -21,10 +19,10 @@ const client = new Client({
     ]
 });
 
-// Initialisiere die Commands Collection
+// Initialise the commands collection
 client.commands = new Collection();
 
-// Lade alle Commands
+// Loade all commands
 const loadCommands = () => {
     const commandFolders = readdirSync(join(__dirname, 'commands'));
     

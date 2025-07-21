@@ -1,5 +1,6 @@
 import { Message, TextChannel, Client } from 'discord.js';
 import { MemberStats } from '../../models/stats/memberStats';
+import { Logger } from '../../utils/logger';
 
 // Cooldown Map to prevent spam (userId -> last message timestamp)
 const xpCooldowns = new Map<string, number>();
@@ -49,13 +50,22 @@ async function handleLevelingOnMessage(message: Message) {
     if (leveledUp) {
       const congratsMessage = `Congratulations ${message.author}! You leveled up to **Level ${memberStats.level}**!`;
 
+      Logger.info(
+        'LEVELING',
+        `User ${userId} leveled up to Level ${memberStats.level} in guild ${guildId}`
+      );
+
       // Send level up message to the same channel (only if it supports sending messages)
       if (message.channel.isTextBased() && 'send' in message.channel) {
         await message.channel.send(congratsMessage);
       }
     }
   } catch (error) {
-    console.error('Error handling leveling on message:', error);
+    Logger.error(
+      'LEVELING',
+      'Error handling leveling on message',
+      error as Error
+    );
   }
 }
 

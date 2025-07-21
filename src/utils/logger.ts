@@ -12,9 +12,15 @@ export enum LogLevel {
 
 export class Logger {
   private static isDevelopment = process.env.NODE_ENV !== 'production';
-  private static logLevel = Logger.isDevelopment ? LogLevel.DEBUG : LogLevel.INFO;
+  private static logLevel = Logger.isDevelopment
+    ? LogLevel.DEBUG
+    : LogLevel.WARN;
 
-  private static formatMessage(level: string, category: string, message: string): string {
+  private static formatMessage(
+    level: string,
+    category: string,
+    message: string
+  ): string {
     const timestamp = new Date().toISOString();
     return `[${timestamp}] [${level}] [${category}] ${message}`;
   }
@@ -89,6 +95,20 @@ export class Logger {
    */
   static stats(type: string, message: string): void {
     Logger.debug('STATS', `${type}: ${message}`);
+  }
+
+  /**
+   * Log system startup and shutdown events (always shown)
+   */
+  static system(message: string): void {
+    Logger.info('SYSTEM', message);
+  }
+
+  /**
+   * Log deployment activities (only in development)
+   */
+  static deploy(message: string): void {
+    Logger.debug('DEPLOY', message);
   }
 
   /**

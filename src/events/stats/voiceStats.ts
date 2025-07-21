@@ -1,5 +1,5 @@
 import { VoiceState, Client } from 'discord.js';
-import { VoiceActivity } from '../../models/voiceActivity';
+import { VoiceActivity } from '../../models/stats/voiceActivity';
 import { MemberStats } from '../../models/stats/memberStats';
 import { ServerStats } from '../../models/stats/serverStats';
 import { Logger } from '../../utils/logger';
@@ -34,7 +34,7 @@ async function handleVoiceStateUpdate(
       );
     }
   } catch (error) {
-    console.error('Error handling voice state update:', error);
+    Logger.error('VOICE', 'Error handling voice state update', error as Error);
   }
 }
 
@@ -54,7 +54,10 @@ async function handleUserJoinedVoice(
     upsert: true,
   });
 
-  Logger.stats('VOICE', `User ${userId} joined voice channel ${channelId} in guild ${guildId}`);
+  Logger.stats(
+    'VOICE',
+    `User ${userId} joined voice channel ${channelId} in guild ${guildId}`
+  );
 }
 
 async function handleUserLeftVoice(
@@ -94,7 +97,10 @@ async function handleUserLeftVoice(
   // Remove the voice activity record after processing
   await VoiceActivity.deleteOne({ guildId, userId });
 
-  Logger.stats('VOICE', `User ${userId} left voice channel ${channelId} after ${duration} seconds`);
+  Logger.stats(
+    'VOICE',
+    `User ${userId} left voice channel ${channelId} after ${duration} seconds`
+  );
 }
 
 async function handleUserSwitchedChannels(
@@ -135,7 +141,10 @@ async function handleUserSwitchedChannels(
   // Then, handle joining the new channel
   await handleUserJoinedVoice(guildId, userId, newChannelId);
 
-  Logger.stats('VOICE', `User ${userId} switched from ${oldChannelId} to ${newChannelId}`);
+  Logger.stats(
+    'VOICE',
+    `User ${userId} switched from ${oldChannelId} to ${newChannelId}`
+  );
 }
 
 // Export event configuration

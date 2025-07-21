@@ -1,6 +1,7 @@
 import { Client } from 'discord.js';
 import { readdirSync, statSync } from 'fs';
 import { join } from 'path';
+import { Logger } from '../utils/logger';
 
 export function setupEventHandler(client: Client) {
   const eventsPath = join(__dirname, '../events');
@@ -29,9 +30,10 @@ export function setupEventHandler(client: Client) {
             client.on(event.name, (...args) => event.execute(...args, client));
           }
 
-          console.log(`Event loaded: ${event.name} (${item})`);
+          Logger.debug('EVENT_LOADER', `Event loaded: ${event.name} (${item})`);
         } else {
-          console.warn(
+          Logger.warn(
+            'EVENT_LOADER',
             `Event file ${item} is missing 'name' or 'execute' property`
           );
         }
@@ -41,5 +43,5 @@ export function setupEventHandler(client: Client) {
 
   // Load all events
   loadEventsFromDirectory(eventsPath);
-  console.log('All event handlers loaded successfully');
+  Logger.info('EVENT_HANDLER', 'All event handlers loaded successfully');
 }

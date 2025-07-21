@@ -3,6 +3,7 @@ import { config } from 'dotenv';
 import mongoose from 'mongoose';
 import { setupCommandHandler } from './handlers/commandhandler';
 import { setupEventHandler } from './handlers/eventhandler';
+import { Logger } from './utils/logger';
 
 config();
 
@@ -25,16 +26,16 @@ client.commands = new Collection();
 
 // Bot Ready Event
 client.once('ready', async () => {
-  console.log(`${client.user?.tag} ist online!`);
+  Logger.info('BOT', `${client.user?.tag} ist online!`);
 
   // Connect to MongoDB
   try {
     await mongoose.connect(
       process.env.MONGO_DB_URI || 'mongodb://localhost:27017/winfbot'
     );
-    console.log('MongoDB connected successfully!');
+    Logger.info('DATABASE', 'MongoDB connected successfully!');
   } catch (error) {
-    console.error('MongoDB connection error:', error);
+    Logger.error('DATABASE', 'MongoDB connection error', error as Error);
   }
 
   // Setup handlers

@@ -1,6 +1,7 @@
 import { Client } from 'discord.js';
 import { readdirSync } from 'fs';
 import { join } from 'path';
+import { Logger } from '../utils/logger';
 
 export function setupCommandHandler(client: Client) {
   // Load all commands
@@ -16,7 +17,10 @@ export function setupCommandHandler(client: Client) {
         const command = require(join(__dirname, '../commands', folder, file));
         if (command.data && command.execute) {
           client.commands.set(command.data.name, command);
-          console.log(`Command loaded: ${command.data.name}`);
+          Logger.debug(
+            'COMMAND_LOADER',
+            `Command loaded: ${command.data.name}`
+          );
         }
       }
     }
@@ -35,9 +39,10 @@ export function setupCommandHandler(client: Client) {
     try {
       await command.execute(interaction);
     } catch (error) {
-      console.error(
-        `Error executing command ${interaction.commandName}:`,
-        error
+      Logger.error(
+        'COMMAND_HANDLER',
+        `Error executing command ${interaction.commandName}`,
+        error as Error
       );
 
       const errorMessage = {

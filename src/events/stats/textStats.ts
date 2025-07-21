@@ -1,6 +1,7 @@
 import { Message, Client } from 'discord.js';
 import { MemberStats } from '../../models/stats/memberStats';
 import { ServerStats } from '../../models/stats/serverStats';
+import { Logger } from '../../utils/logger';
 
 async function handleTextStatsOnMessage(message: Message) {
   // Ignore bot messages
@@ -41,7 +42,11 @@ async function handleTextStatsOnMessage(message: Message) {
     serverStats.incrementTextChannel(channelId);
     await serverStats.save();
   } catch (error) {
-    console.error('Error handling text stats on message:', error);
+    Logger.error(
+      'TEXT_STATS',
+      'Error handling text stats on message',
+      error as Error
+    );
   }
 }
 

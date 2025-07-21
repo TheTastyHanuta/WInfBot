@@ -2,6 +2,7 @@ import { REST, Routes } from 'discord.js';
 import { config } from 'dotenv';
 import { readdirSync } from 'fs';
 import { join } from 'path';
+import { Logger } from './utils/logger';
 
 config();
 
@@ -18,7 +19,7 @@ for (const folder of commandFolders) {
     const command = require(join(__dirname, 'commands', folder, file));
     if (command.data) {
       commands.push(command.data.toJSON());
-      console.log(`Command registriert: ${command.data.name}`);
+      Logger.debug('DEPLOY', `Command registriert: ${command.data.name}`);
     }
   }
 }
@@ -27,15 +28,22 @@ const rest = new REST().setToken(process.env.BOT_TOKEN!);
 
 (async () => {
   try {
-    console.log(`Registriere ${commands.length} Slash Commands...`);
+    Logger.info('DEPLOY', `Registriere ${commands.length} Slash Commands...`);
 
     const data = (await rest.put(
       Routes.applicationCommands(process.env.CLIENT_ID!),
       { body: commands }
     )) as any[];
 
-    console.log(`Erfolgreich ${data.length} Slash Commands registriert!`);
+    Logger.info(
+      'DEPLOY',
+      `Erfolgreich ${data.length} Slash Commands registriert!`
+    );
   } catch (error) {
-    console.error('Fehler beim Registrieren der Commands:', error);
+    Logger.error(
+      'DEPLOY',
+      'Fehler beim Registrieren der Commands',
+      error as Error
+    );
   }
 })();

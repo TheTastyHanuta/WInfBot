@@ -1,7 +1,8 @@
 import { Client, GatewayIntentBits, Collection } from 'discord.js';
 import { config } from 'dotenv';
-import { readdirSync } from 'fs';
-import { join } from 'path';
+import mongoose from 'mongoose';
+import { setupCommandHandler } from './handlers/commandhandler';
+import { setupEventHandler } from './handlers/eventhandler';
 
 config();
 
@@ -22,57 +23,23 @@ const client = new Client({
 // Initialise the commands collection
 client.commands = new Collection();
 
-// Loade all commands
-const loadCommands = () => {
-  const commandFolders = readdirSync(join(__dirname, 'commands'));
-
-  for (const folder of commandFolders) {
-    const commandFiles = readdirSync(
-      join(__dirname, 'commands', folder)
-    ).filter(file => file.endsWith('.js') || file.endsWith('.ts'));
-
-    for (const file of commandFiles) {
-      const command = require(join(__dirname, 'commands', folder, file));
-      if (command.data && command.execute) {
-        client.commands.set(command.data.name, command);
-        console.log(`Command geladen: ${command.data.name}`);
-      }
-    }
-  }
-};
-
 // Bot Ready Event
-client.once('ready', () => {
+client.once('ready', async () => {
   console.log(`${client.user?.tag} ist online!`);
-  loadCommands();
-});
 
-// Slash Command Handler
-client.on('interactionCreate', async interaction => {
-  if (!interaction.isChatInputCommand()) return;
-
-  const command = client.commands.get(interaction.commandName);
-  if (!command) return;
-
+  // Connect to MongoDB
   try {
-    await command.execute(interaction);
-  } catch (error) {
-    console.error(
-      `Fehler beim Ausführen des Commands ${interaction.commandName}:`,
-      error
+    await mongoose.connect(
+      process.env.MONGO_DB_URI || 'mongodb://localhost:27017/winfbot'
     );
-
-    const errorMessage = {
-      content: 'Es gab einen Fehler beim Ausführen dieses Commands!',
-      ephemeral: true,
-    };
-
-    if (interaction.replied || interaction.deferred) {
-      await interaction.followUp(errorMessage);
-    } else {
-      await interaction.reply(errorMessage);
-    }
+    console.log('MongoDB connected successfully!');
+  } catch (error) {
+    console.error('MongoDB connection error:', error);
   }
+
+  // Setup handlers
+  setupCommandHandler(client);
+  setupEventHandler(client);
 });
 
 // Bot Login

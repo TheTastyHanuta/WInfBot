@@ -40,7 +40,6 @@ async function handleTextStatsOnMessage(message: Message) {
     // Increment text channel stats for the server
     serverStats.incrementTextChannel(channelId);
     await serverStats.save();
-
   } catch (error) {
     console.error('Error handling text stats on message:', error);
   }

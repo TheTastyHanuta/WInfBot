@@ -16,6 +16,8 @@ export interface IServerStats extends Document {
   getTotalVoiceActivity(): number;
   getMostActiveTextChannel(): { channelId: string; count: number } | null;
   getMostActiveVoiceChannel(): { channelId: string; count: number } | null;
+  getAllTextChannelsSorted(): { channelId: string; count: number }[];
+  getAllVoiceChannelsSorted(): { channelId: string; count: number }[];
 }
 
 // Interface for static methods
@@ -148,6 +150,34 @@ serverStatsSchema.methods.getMostActiveVoiceChannel = function (): {
   }
 
   return maxChannelId ? { channelId: maxChannelId, count: maxCount } : null;
+};
+
+serverStatsSchema.methods.getAllTextChannelsSorted = function (): {
+  channelId: string;
+  count: number;
+}[] {
+  const channels: { channelId: string; count: number }[] = [];
+
+  for (const [channelId, count] of this.textChannels.entries()) {
+    channels.push({ channelId, count });
+  }
+
+  // Sort by count (descending)
+  return channels.sort((a, b) => b.count - a.count);
+};
+
+serverStatsSchema.methods.getAllVoiceChannelsSorted = function (): {
+  channelId: string;
+  count: number;
+}[] {
+  const channels: { channelId: string; count: number }[] = [];
+
+  for (const [channelId, count] of this.voiceChannels.entries()) {
+    channels.push({ channelId, count });
+  }
+
+  // Sort by count (descending)
+  return channels.sort((a, b) => b.count - a.count);
 };
 
 export const ServerStats = model<IServerStats, IServerStatsModel>(

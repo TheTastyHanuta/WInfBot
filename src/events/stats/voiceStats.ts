@@ -54,7 +54,7 @@ async function handleUserJoinedVoice(
     upsert: true,
   });
 
-  Logger.stats(
+  Logger.debug(
     'VOICE',
     `User ${userId} joined voice channel ${channelId} in guild ${guildId}`
   );
@@ -97,7 +97,7 @@ async function handleUserLeftVoice(
   // Remove the voice activity record after processing
   await VoiceActivity.deleteOne({ guildId, userId });
 
-  Logger.stats(
+  Logger.debug(
     'VOICE',
     `User ${userId} left voice channel ${channelId} after ${duration} seconds`
   );
@@ -141,7 +141,7 @@ async function handleUserSwitchedChannels(
   // Then, handle joining the new channel
   await handleUserJoinedVoice(guildId, userId, newChannelId);
 
-  Logger.stats(
+  Logger.debug(
     'VOICE',
     `User ${userId} switched from ${oldChannelId} to ${newChannelId}`
   );

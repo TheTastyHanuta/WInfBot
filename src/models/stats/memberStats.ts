@@ -14,22 +14,39 @@ export interface IMemberStats extends Document {
 
   // Instance methods with detailed descriptions
 
-  /** Add XP to the member and check for level up */
+  /**
+   * @param amount Amount of XP to add
+   * @returns True if the user leveled up, false otherwise
+   */
   addXP(amount: number): boolean;
 
-  /** Get the XP required to reach a specific level */
+  /**
+   * @param level The level to calculate the required XP for
+   * @returns The amount of XP required to reach the specified level
+   */
   getXPRequiredForLevel(level: number): number;
 
-  /** Get the remaining XP needed to reach the next level */
+  /**
+   * @returns The amount of XP remaining until the next level
+   */
   getXPUntilNextLevel(): number;
 
-  /** Get the progress to next level as a decimal (0.0 to 1.0) */
+  /**
+   * @returns The progress towards the next level as a value between 0 and 1
+   */
   getLevelProgress(): number;
 
-  /** Increment the message count for a specific text channel */
+  /**
+   * Increments the message count and the count for a specific text channel.
+   * @param channelId The ID of the text channel where the message was sent.
+   */
   incrementTextChannel(channelId: string): void;
 
-  /** Add voice time (in seconds) for a specific voice channel */
+  /**
+   * Adds voice time for a specific channel.
+   * @param channelId The ID of the voice channel.
+   * @param timeInSeconds The amount of time in seconds to add.
+   */
   addVoiceTime(channelId: string, timeInSeconds: number): void;
 }
 
@@ -179,6 +196,5 @@ memberStatsSchema.methods.addVoiceTime = function (
   this.voiceTime += timeInSeconds;
 };
 
-export const MemberStats =
-  (models.MemberStats as IMemberStatsModel) ||
-  model<IMemberStats, IMemberStatsModel>('MemberStats', memberStatsSchema);
+export const MemberStats = ((models.MemberStats as IMemberStatsModel) ||
+  model<IMemberStats, IMemberStatsModel>('MemberStats', memberStatsSchema)) as IMemberStatsModel;

@@ -9,34 +9,68 @@ export interface IServerStats extends Document {
 
   // Instance methods with detailed descriptions
 
-  /** Increment the message count for a specific text channel */
+  /**
+   * Increments the message count for a specific text channel.
+   * @param channelId The ID of the text channel to increment.
+   * @param amount The amount to increment by (default is 1).
+   */
   incrementTextChannel(channelId: string, amount?: number): void;
 
-  /** Increment the activity count for a specific voice channel */
+  /**
+   * Increments the activity count for a specific voice channel.
+   * @param channelId The ID of the voice channel to increment.
+   * @param amount The amount to increment by (default is 1).
+   */
   incrementVoiceChannel(channelId: string, amount?: number): void;
 
-  /** Get the message count for a specific text channel */
+  /**
+   * Get the activity count for a specific text channel.
+   * @param channelId The ID of the text channel.
+   * @returns The number of messages in the specified text channel.
+   */
   getTextChannelStats(channelId: string): number;
 
-  /** Get the activity count for a specific voice channel */
+  /**
+   * Get the activity count for a specific voice channel.
+   * @param channelId The ID of the voice channel.
+   * @returns The number of users in the specified voice channel.
+   */
   getVoiceChannelStats(channelId: string): number;
 
-  /** Get the total number of messages across all text channels */
+  /**
+   * Get the total number of messages across all text channels.
+   * @returns The total number of messages in all text channels.
+   */
   getTotalTextMessages(): number;
 
-  /** Get the total voice activity across all voice channels */
+  /**
+   * Get the total voice activity across all voice channels.
+   * @returns The total voice activity in all voice channels.
+   */
   getTotalVoiceActivity(): number;
 
-  /** Get the most active text channel with its message count */
+  /**
+   * Get the most active text channel with its message count.
+   * @returns An object containing the channel ID and message count, or null if no channels exist.
+   */
   getMostActiveTextChannel(): { channelId: string; count: number } | null;
 
-  /** Get the most active voice channel with its activity count */
+  /**
+   * Get the most active voice channel with its activity count.
+   * @returns An object containing the channel ID and activity count, or null if no channels exist.
+   */
   getMostActiveVoiceChannel(): { channelId: string; count: number } | null;
 
-  /** Get all text channels sorted by message count (descending) */
+  /**
+   * Get all text channels sorted by message count in descending order.
+   * @returns An array of objects containing channel IDs and their message counts.
+   */
   getAllTextChannelsSorted(): { channelId: string; count: number }[];
 
-  /** Get all voice channels sorted by activity count (descending) */
+  /**
+   * Get all voice channels sorted by activity count in descending order.
+   * @returns An array of objects containing channel IDs and their activity counts.
+   */
   getAllVoiceChannelsSorted(): { channelId: string; count: number }[];
 }
 
@@ -71,7 +105,7 @@ const serverStatsSchema = new Schema<IServerStats>(
     },
   },
   {
-    timestamps: true, // Automatically adds createdAt and updatedAt
+    timestamps: true,
     collection: 'serverStats',
   }
 );
@@ -203,6 +237,5 @@ serverStatsSchema.methods.getAllVoiceChannelsSorted = function (): {
   return channels.sort((a, b) => b.count - a.count);
 };
 
-export const ServerStats =
-  models.ServerStats ||
-  model<IServerStats, IServerStatsModel>('ServerStats', serverStatsSchema);
+export const ServerStats = (models.ServerStats ||
+  model<IServerStats, IServerStatsModel>('ServerStats', serverStatsSchema)) as IServerStatsModel;

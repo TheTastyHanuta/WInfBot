@@ -17,14 +17,8 @@ export interface IMemberStats extends Document {
   /** Add XP to the member and check for level up */
   addXP(amount: number): boolean;
 
-  /** Calculate the level based on given XP amount */
-  calculateLevelFromXP(xp: number): number;
-
   /** Get the XP required to reach a specific level */
   getXPRequiredForLevel(level: number): number;
-
-  /** Get the total XP required to reach a specific level from level 1 */
-  getTotalXPForLevel(level: number): number;
 
   /** Get the remaining XP needed to reach the next level */
   getXPUntilNextLevel(): number;
@@ -140,28 +134,13 @@ memberStatsSchema.statics.getAllByGuild = function (guildId: string) {
 memberStatsSchema.methods.addXP = function (amount: number) {
   this.xp += amount;
 
-  // Calculate the required level based on current XP
-  const newLevel = this.calculateLevelFromXP(this.xp);
-  if (newLevel > this.level) {
-    this.level = newLevel;
-    return true; // Level-up occurred
+  const xpForNextLevel = this.getXPRequiredForLevel(this.level + 1);
+  if (this.xp >= xpForNextLevel) {
+    this.xp -= xpForNextLevel;
+    this.level++;
+    return true;
   }
   return false; // No level-up
-};
-
-// Helper method: Calculate level based on XP (progressive scaling)
-memberStatsSchema.methods.calculateLevelFromXP = function (xp: number): number {
-  let level = 1;
-  let totalXPNeeded = 0;
-
-  while (totalXPNeeded <= xp) {
-    const xpForNextLevel = this.getXPRequiredForLevel(level + 1);
-    if (totalXPNeeded + xpForNextLevel > xp) break;
-    totalXPNeeded += xpForNextLevel;
-    level++;
-  }
-
-  return level;
 };
 
 // Calculate the required XP for a specific level
@@ -173,30 +152,16 @@ memberStatsSchema.methods.getXPRequiredForLevel = function (
   return Math.floor(100 * Math.pow(1.1, level - 2));
 };
 
-// Calculate the total XP required for a level
-memberStatsSchema.methods.getTotalXPForLevel = function (
-  level: number
-): number {
-  let totalXP = 0;
-  for (let i = 2; i <= level; i++) {
-    totalXP += this.getXPRequiredForLevel(i);
-  }
-  return totalXP;
-};
-
 // Calculate XP remaining until next level
 memberStatsSchema.methods.getXPUntilNextLevel = function (): number {
-  const currentLevelTotalXP = this.getTotalXPForLevel(this.level);
-  const nextLevelTotalXP = this.getTotalXPForLevel(this.level + 1);
-  return nextLevelTotalXP - this.xp;
+  const nextLevelXPRequired = this.getXPRequiredForLevel(this.level + 1);
+  return nextLevelXPRequired - this.xp;
 };
 
 // Calculate progress to next level (0-1)
 memberStatsSchema.methods.getLevelProgress = function (): number {
-  const currentLevelTotalXP = this.getTotalXPForLevel(this.level);
   const nextLevelXPRequired = this.getXPRequiredForLevel(this.level + 1);
-  const progressXP = this.xp - currentLevelTotalXP;
-  return Math.min(progressXP / nextLevelXPRequired, 1);
+  return Math.min(this.xp / nextLevelXPRequired, 1);
 };
 
 memberStatsSchema.methods.incrementTextChannel = function (channelId: string) {

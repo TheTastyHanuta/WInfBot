@@ -16,8 +16,8 @@ export class Logger {
   private static isDevelopment = process.env.NODE_ENV !== 'production';
   private static logLevel = Logger.isDevelopment
     ? LogLevel.DEBUG
-    : LogLevel.WARN;
-  
+    : LogLevel.INFO;
+
   // Default timezone - can be configured via environment variable
   private static timezone = process.env.LOG_TIMEZONE || 'Europe/Berlin';
 
@@ -26,7 +26,9 @@ export class Logger {
     category: string,
     message: string
   ): string {
-    const timestamp = moment().tz(Logger.timezone).format('YYYY-MM-DD HH:mm:ss z');
+    const timestamp = moment()
+      .tz(Logger.timezone)
+      .format('YYYY-MM-DD HH:mm:ss z');
     return `[${timestamp}] [${level}] [${category}] ${message}`;
   }
 
@@ -96,24 +98,10 @@ export class Logger {
   }
 
   /**
-   * Log statistics updates (only in development)
-   */
-  static stats(type: string, message: string): void {
-    Logger.debug('STATS', `${type}: ${message}`);
-  }
-
-  /**
    * Log system startup and shutdown events (always shown)
    */
   static system(message: string): void {
     Logger.info('SYSTEM', message);
-  }
-
-  /**
-   * Log deployment activities (only in development)
-   */
-  static deploy(message: string): void {
-    Logger.debug('DEPLOY', message);
   }
 
   /**
@@ -139,7 +127,10 @@ export class Logger {
       Logger.timezone = timezone;
       Logger.info('LOGGER', `Timezone set to: ${timezone}`);
     } else {
-      Logger.warn('LOGGER', `Invalid timezone: ${timezone}. Using default: ${Logger.timezone}`);
+      Logger.warn(
+        'LOGGER',
+        `Invalid timezone: ${timezone}. Using default: ${Logger.timezone}`
+      );
     }
   }
 

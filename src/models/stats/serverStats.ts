@@ -1,4 +1,4 @@
-import { Schema, model, Document, Model } from 'mongoose';
+import { Schema, model, models, Document, Model } from 'mongoose';
 
 export interface IServerStats extends Document {
   guildId: string;
@@ -203,7 +203,6 @@ serverStatsSchema.methods.getAllVoiceChannelsSorted = function (): {
   return channels.sort((a, b) => b.count - a.count);
 };
 
-export const ServerStats = model<IServerStats, IServerStatsModel>(
-  'ServerStats',
-  serverStatsSchema
-);
+export const ServerStats =
+  models.ServerStats ||
+  model<IServerStats, IServerStatsModel>('ServerStats', serverStatsSchema);

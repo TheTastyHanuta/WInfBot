@@ -50,7 +50,7 @@ async function handleLevelingOnMessage(message: Message) {
     if (leveledUp) {
       const congratsMessage = `Congratulations ${message.author}! You leveled up to **Level ${memberStats.level}**!`;
 
-      Logger.info(
+      Logger.debug(
         'LEVELING',
         `User ${userId} leveled up to Level ${memberStats.level} in guild ${guildId}`
       );

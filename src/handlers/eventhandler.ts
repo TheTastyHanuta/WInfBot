@@ -4,7 +4,11 @@ import { join } from 'path';
 import { Logger } from '../utils/logger';
 
 export function setupEventHandler(client: Client) {
-  const eventsPath = join(__dirname, '../events');
+  // Determine the correct path based on whether we're running from dist or src
+  const isProduction = __filename.includes('dist');
+  const eventsPath = isProduction
+    ? join(__dirname, 'events') // Use relative path for production (compiled)
+    : join(__dirname, '../events'); // Use __dirname for development
 
   // Recursively load events from all subdirectories
   const loadEventsFromDirectory = (directory: string) => {
@@ -17,25 +21,38 @@ export function setupEventHandler(client: Client) {
       if (stat.isDirectory()) {
         // Recursively load from subdirectories
         loadEventsFromDirectory(fullPath);
-      } else if (item.endsWith('.js') || item.endsWith('.ts')) {
-        // Load event file
-        const event = require(fullPath);
+      } else {
+        // Check file extension based on environment
+        const isProduction = __filename.includes('dist');
+        const isValidFile = isProduction
+          ? item.endsWith('.js')
+          : item.endsWith('.js') || item.endsWith('.ts');
 
-        if (event.name && event.execute) {
-          if (event.once) {
-            client.once(event.name, (...args) =>
-              event.execute(...args, client)
+        if (isValidFile) {
+          // Load event file
+          const event = require(fullPath);
+
+          if (event.name && event.execute) {
+            if (event.once) {
+              client.once(event.name, (...args) =>
+                event.execute(...args, client)
+              );
+            } else {
+              client.on(event.name, (...args) =>
+                event.execute(...args, client)
+              );
+            }
+
+            Logger.debug(
+              'EVENT_LOADER',
+              `Event loaded: ${event.name} (${item})`
             );
           } else {
-            client.on(event.name, (...args) => event.execute(...args, client));
+            Logger.warn(
+              'EVENT_LOADER',
+              `Event file ${item} is missing 'name' or 'execute' property`
+            );
           }
-
-          Logger.debug('EVENT_LOADER', `Event loaded: ${event.name} (${item})`);
-        } else {
-          Logger.warn(
-            'EVENT_LOADER',
-            `Event file ${item} is missing 'name' or 'execute' property`
-          );
         }
       }
     }

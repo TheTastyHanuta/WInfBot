@@ -1,4 +1,4 @@
-import { Schema, model, Document } from 'mongoose';
+import { Schema, model, models, Document } from 'mongoose';
 
 export interface IVoiceActivity extends Document {
   guildId: string;
@@ -35,7 +35,6 @@ const voiceActivitySchema = new Schema<IVoiceActivity>(
 // Compound index for better performance
 voiceActivitySchema.index({ guildId: 1, userId: 1 }, { unique: true });
 
-export const VoiceActivity = model<IVoiceActivity>(
-  'VoiceActivity',
-  voiceActivitySchema
-);
+export const VoiceActivity =
+  models.VoiceActivity ||
+  model<IVoiceActivity>('VoiceActivity', voiceActivitySchema);

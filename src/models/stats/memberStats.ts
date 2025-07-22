@@ -1,4 +1,4 @@
-import { Schema, model, Document, Model } from 'mongoose';
+import { Schema, model, models, Document, Model } from 'mongoose';
 
 export interface IMemberStats extends Document {
   guildId: string;
@@ -214,7 +214,6 @@ memberStatsSchema.methods.addVoiceTime = function (
   this.voiceTime += timeInSeconds;
 };
 
-export const MemberStats = model<IMemberStats, IMemberStatsModel>(
-  'MemberStats',
-  memberStatsSchema
-);
+export const MemberStats =
+  (models.MemberStats as IMemberStatsModel) ||
+  model<IMemberStats, IMemberStatsModel>('MemberStats', memberStatsSchema);

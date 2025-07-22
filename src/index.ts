@@ -26,7 +26,7 @@ client.commands = new Collection();
 
 // Bot Ready Event
 client.once('ready', async () => {
-  Logger.info('BOT', `${client.user?.tag} ist online!`);
+  Logger.system(`${client.user?.tag} ist online!`);
 
   // Connect to MongoDB
   try {

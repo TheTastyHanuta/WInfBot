@@ -6,15 +6,24 @@ import { Logger } from '../utils/logger';
 export function setupCommandHandler(client: Client) {
   // Load all commands
   const loadCommands = () => {
-    const commandFolders = readdirSync(join(__dirname, '../commands'));
+    // Determine the correct path based on whether we're running from dist or src
+    const isProduction = __filename.includes('dist');
+    const commandsPath = isProduction
+      ? join(__dirname, 'commands') // Use relative path for production (compiled)
+      : join(__dirname, '../commands'); // Use __dirname for development
+
+    const commandFolders = readdirSync(commandsPath);
 
     for (const folder of commandFolders) {
-      const commandFiles = readdirSync(
-        join(__dirname, '../commands', folder)
-      ).filter(file => file.endsWith('.js') || file.endsWith('.ts'));
+      const folderPath = join(commandsPath, folder);
+      const commandFiles = readdirSync(folderPath).filter(file =>
+        isProduction
+          ? file.endsWith('.js')
+          : file.endsWith('.js') || file.endsWith('.ts')
+      );
 
       for (const file of commandFiles) {
-        const command = require(join(__dirname, '../commands', folder, file));
+        const command = require(join(folderPath, file));
         if (command.data && command.execute) {
           client.commands.set(command.data.name, command);
           Logger.debug(

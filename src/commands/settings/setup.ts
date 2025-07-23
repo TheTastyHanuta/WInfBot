@@ -197,6 +197,7 @@ async function showSetupStep(session: SetupSession) {
       await interaction.reply({
         embeds: [embed],
         components,
+        flags: MessageFlags.Ephemeral,
       });
     }
 

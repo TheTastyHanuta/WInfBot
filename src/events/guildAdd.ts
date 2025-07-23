@@ -11,7 +11,7 @@ async function handleGuildAdd(guild: Guild, client: Client) {
   try {
     // Create or find Guild Settings for the new server
     const guildSettings = await GuildSettings.findOrCreateByGuildId(guildId);
-    
+
     Logger.info(
       'GUILD_ADD',
       `Guild Settings for server ${guildName} (${guildId}) have been initialized`

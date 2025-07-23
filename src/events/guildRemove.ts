@@ -9,24 +9,39 @@ async function handleGuildRemove(guild: Guild, client: Client) {
   const guildId = guild.id;
   const guildName = guild.name;
 
-  Logger.info('GUILD_REMOVE', `Bot was removed from server: ${guildName} (${guildId})`);
+  Logger.info(
+    'GUILD_REMOVE',
+    `Bot was removed from server: ${guildName} (${guildId})`
+  );
 
   try {
     // Delete all Guild Settings
     const deletedSettings = await GuildSettings.deleteMany({ guildId });
-    Logger.debug('GUILD_REMOVE', `${deletedSettings.deletedCount} Guild Settings deleted`);
+    Logger.debug(
+      'GUILD_REMOVE',
+      `${deletedSettings.deletedCount} Guild Settings deleted`
+    );
 
     // Delete all Member Stats for this Guild
     const deletedMemberStats = await MemberStats.deleteMany({ guildId });
-    Logger.debug('GUILD_REMOVE', `${deletedMemberStats.deletedCount} Member Stats deleted`);
+    Logger.debug(
+      'GUILD_REMOVE',
+      `${deletedMemberStats.deletedCount} Member Stats deleted`
+    );
 
     // Delete all Server Stats for this Guild
     const deletedServerStats = await ServerStats.deleteMany({ guildId });
-    Logger.debug('GUILD_REMOVE', `${deletedServerStats.deletedCount} Server Stats deleted`);
+    Logger.debug(
+      'GUILD_REMOVE',
+      `${deletedServerStats.deletedCount} Server Stats deleted`
+    );
 
     // Delete all Voice Activity entries for this Guild
     const deletedVoiceActivity = await VoiceActivity.deleteMany({ guildId });
-    Logger.debug('GUILD_REMOVE', `${deletedVoiceActivity.deletedCount} Voice Activity entries deleted`);
+    Logger.debug(
+      'GUILD_REMOVE',
+      `${deletedVoiceActivity.deletedCount} Voice Activity entries deleted`
+    );
 
     Logger.info(
       'GUILD_REMOVE',

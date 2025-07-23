@@ -8,6 +8,10 @@ async function handleVoiceStateUpdate(
   oldState: VoiceState,
   newState: VoiceState
 ) {
+  Logger.debug(
+    'VOICE',
+    `Voice state update: ${oldState.member?.user.tag} (${oldState.member?.id}) from ${oldState.channelId} to ${newState.channelId}`
+  );
   // Ignore if no member or if member is a bot
   if (!newState.member || !oldState.member || oldState.member.user.bot) return;
 

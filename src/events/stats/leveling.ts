@@ -1,5 +1,6 @@
 import { Message, TextChannel, Client } from 'discord.js';
 import { MemberStats } from '../../models/stats/memberStats';
+import { GuildSettings } from '../../models/settings/settings';
 import { Logger } from '../../utils/logger';
 
 // Cooldown Map to prevent spam (userId -> last message timestamp)
@@ -48,16 +49,48 @@ async function handleLevelingOnMessage(message: Message) {
 
     // If user leveled up, send congratulation message
     if (leveledUp) {
-      const congratsMessage = `Congratulations ${message.author}! You leveled up to **Level ${memberStats.level}**!`;
+      // Check guild settings for leveling messages
+      const guildSettings = await GuildSettings.findOrCreateByGuildId(guildId);
+      const levelingSettings = guildSettings.getSetting('leveling');
 
-      Logger.debug(
-        'LEVELING',
-        `User ${userId} leveled up to Level ${memberStats.level} in guild ${guildId}`
-      );
+      // Only send message if leveling messages are enabled
+      if (levelingSettings?.enabled && levelingSettings?.messages) {
+        const congratsMessage = `Congratulations ${message.author}! You leveled up to **Level ${memberStats.level}**!`;
 
-      // Send level up message to the same channel (only if it supports sending messages)
-      if (message.channel.isTextBased() && 'send' in message.channel) {
-        await message.channel.send(congratsMessage);
+        Logger.debug(
+          'LEVELING',
+          `User ${userId} leveled up to Level ${memberStats.level} in guild ${guildId}`
+        );
+
+        // Determine which channel to send the message to
+        let targetChannel = null;
+
+        if (levelingSettings.channel) {
+          // Use the designated leveling channel
+          targetChannel = message.guild?.channels.cache.get(
+            levelingSettings.channel
+          );
+        } else {
+          // Fallback to the current channel if no specific channel is set
+          targetChannel = message.channel;
+        }
+
+        // Send level up message to the target channel
+        if (
+          targetChannel &&
+          targetChannel.isTextBased() &&
+          'send' in targetChannel
+        ) {
+          try {
+            await targetChannel.send(congratsMessage);
+          } catch (error) {
+            Logger.error(
+              'LEVELING',
+              `Failed to send level up message to channel ${targetChannel.id}`,
+              error as Error
+            );
+          }
+        }
       }
     }
   } catch (error) {

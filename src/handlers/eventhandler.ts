@@ -4,7 +4,7 @@ import { join } from 'path';
 import { Logger } from '../utils/logger';
 
 export function setupEventHandler(client: Client) {
-  // Determine the correct path based on whether we're running from dist or src
+  // Determine the correct path based on whether running from dist or src
   const isProduction = __filename.includes('dist');
   const eventsPath = isProduction
     ? join(__dirname, 'events') // Use relative path for production (compiled)
@@ -60,5 +60,5 @@ export function setupEventHandler(client: Client) {
 
   // Load all events
   loadEventsFromDirectory(eventsPath);
-  Logger.info('EVENT_HANDLER', 'All event handlers loaded successfully');
+  Logger.info('EVENT_HANDLER', 'All events loaded successfully');
 }

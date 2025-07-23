@@ -197,4 +197,7 @@ memberStatsSchema.methods.addVoiceTime = function (
 };
 
 export const MemberStats = ((models.MemberStats as IMemberStatsModel) ||
-  model<IMemberStats, IMemberStatsModel>('MemberStats', memberStatsSchema)) as IMemberStatsModel;
+  model<IMemberStats, IMemberStatsModel>(
+    'MemberStats',
+    memberStatsSchema
+  )) as IMemberStatsModel;

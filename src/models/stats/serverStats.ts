@@ -238,4 +238,7 @@ serverStatsSchema.methods.getAllVoiceChannelsSorted = function (): {
 };
 
 export const ServerStats = (models.ServerStats ||
-  model<IServerStats, IServerStatsModel>('ServerStats', serverStatsSchema)) as IServerStatsModel;
+  model<IServerStats, IServerStatsModel>(
+    'ServerStats',
+    serverStatsSchema
+  )) as IServerStatsModel;

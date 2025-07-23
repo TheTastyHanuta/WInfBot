@@ -6,7 +6,7 @@ import { Logger } from '../utils/logger';
 export function setupCommandHandler(client: Client) {
   // Load all commands
   const loadCommands = () => {
-    // Determine the correct path based on whether we're running from dist or src
+    // Determine the correct path based on whether running from dist or src
     const isProduction = __filename.includes('dist');
     const commandsPath = isProduction
       ? join(__dirname, 'commands') // Use relative path for production (compiled)
@@ -33,6 +33,7 @@ export function setupCommandHandler(client: Client) {
         }
       }
     }
+    Logger.info('COMMAND_LOADER', `Loaded ${client.commands.size} commands`);
   };
 
   // Call loadCommands function

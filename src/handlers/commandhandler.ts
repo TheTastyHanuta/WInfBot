@@ -48,6 +48,9 @@ export function setupCommandHandler(client: Client) {
 
     try {
       await command.execute(interaction);
+      Logger.command(
+        interaction.commandName, interaction.user.tag, interaction.guild?.name ? interaction.guild.name : undefined
+      );
     } catch (error) {
       Logger.error(
         'COMMAND_HANDLER',

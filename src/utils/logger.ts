@@ -84,20 +84,6 @@ export class Logger {
   }
 
   /**
-   * Log event activities (only in development)
-   */
-  static event(eventName: string, message: string): void {
-    Logger.debug(eventName.toUpperCase(), message);
-  }
-
-  /**
-   * Log database operations (only in development)
-   */
-  static database(operation: string, details: string): void {
-    Logger.debug('DATABASE', `${operation}: ${details}`);
-  }
-
-  /**
    * Log system startup and shutdown events (always shown)
    */
   static system(message: string): void {
@@ -105,7 +91,7 @@ export class Logger {
   }
 
   /**
-   * Set log level manually (useful for testing)
+   * Set log level manually
    */
   static setLogLevel(level: LogLevel): void {
     Logger.logLevel = level;

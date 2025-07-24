@@ -65,7 +65,7 @@ async function connectToDatabases() {
 
     // Connect to new database
     newConnection = mongoose.createConnection(
-      process.env.MONGO_DB_URI || 'mongodb://localhost:27017/winfbot'
+      process.env.TEST_MONGO_DB_URI || 'mongodb://localhost:27017/winfbot'
     );
     console.log('DATABASE', 'New MongoDB connected successfully!');
 
@@ -82,14 +82,6 @@ function convertChannelsToMap(channels: any[]): Map<string, number> {
 
   if (Array.isArray(channels)) {
     channels.forEach((channel, index) => {
-      // Log the first few channel objects to understand the structure
-      if (index < 3) {
-        console.log(
-          'Channel object structure:',
-          JSON.stringify(channel, null, 2)
-        );
-      }
-
       // Try multiple possible field name combinations
       let channelId: string | null = null;
       let count: number | null = null;

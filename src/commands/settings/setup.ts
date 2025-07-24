@@ -104,7 +104,7 @@ export async function execute(interaction: CommandInteraction) {
   }
 
   try {
-    const guildSettings = await GuildSettings.findOrCreateByGuildId(
+    const guildSettings = await GuildSettings.findByGuildId(
       interaction.guild.id
     );
 

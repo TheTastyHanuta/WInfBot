@@ -43,8 +43,8 @@ export async function execute(interaction: ChatInputCommandInteraction) {
   const message = interaction.options.getString('message', true);
 
   try {
-    // Get or create guild settings
-    const guildSettings = await GuildSettings.findOrCreateByGuildId(
+    // Get guild settings
+    const guildSettings = await GuildSettings.findByGuildId(
       interaction.guild.id
     );
 

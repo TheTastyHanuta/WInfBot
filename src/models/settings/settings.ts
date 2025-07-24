@@ -138,7 +138,7 @@ export interface IGuildSettingsDocument extends Document {
 // Interface for static methods
 export interface IGuildSettingsModel extends Model<IGuildSettingsDocument> {
   /** Find guild settings by guild ID */
-  findByGuildId(guildId: string): Promise<IGuildSettingsDocument | null>;
+  findByGuildId(guildId: string): Promise<IGuildSettingsDocument>;
   /** Find or create guild settings by guild ID */
   findOrCreateByGuildId(guildId: string): Promise<IGuildSettingsDocument>;
 }

@@ -7,6 +7,13 @@ import { Logger } from './utils/logger';
 
 config();
 
+// Environment configuration
+const isDevelopment = process.env.NODE_ENV === 'development';
+const botToken = isDevelopment ? process.env.TEST_BOT_TOKEN : process.env.BOT_TOKEN;
+const mongoUri = isDevelopment 
+  ? process.env.TEST_MONGO_DB_URI 
+  : process.env.MONGO_DB_URI || 'mongodb://localhost:27017/winfbot';
+
 declare module 'discord.js' {
   export interface Client {
     commands: Collection<string, any>;
@@ -44,14 +51,16 @@ client.commands = new Collection();
 
 // Bot Ready Event
 client.once('ready', async () => {
-  Logger.system(`${client.user?.tag} ist online!`);
+  const environment = isDevelopment ? 'DEVELOPMENT' : 'PRODUCTION';
+  Logger.system(`${client.user?.tag} is online! (${environment})`);
 
   // Connect to MongoDB
   try {
-    await mongoose.connect(
-      process.env.MONGO_DB_URI || 'mongodb://localhost:27017/winfbot'
-    );
-    Logger.info('DATABASE', 'MongoDB connected successfully!');
+    if (!mongoUri) {
+      throw new Error('MongoDB URI not configured');
+    }
+    await mongoose.connect(mongoUri);
+    Logger.info('DATABASE', `MongoDB connected successfully! (${environment})`);
   } catch (error) {
     Logger.error('DATABASE', 'MongoDB connection error', error as Error);
   }
@@ -62,4 +71,8 @@ client.once('ready', async () => {
 });
 
 // Bot Login
-client.login(process.env.BOT_TOKEN);
+if (!botToken) {
+  Logger.error('BOT', 'Bot Token not configured');
+  process.exit(1);
+}
+client.login(botToken);

@@ -23,7 +23,7 @@ async function handleVoiceStateUpdate(
   const userId = newState.member.id;
 
   // Check if user tracking is enabled for this guild
-  const guildSettings = await GuildSettings.findOrCreateByGuildId(guildId);
+  const guildSettings = await GuildSettings.findByGuildId(guildId);
   if (!guildSettings.getSetting('userTracking')?.enabled) return;
 
   try {

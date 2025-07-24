@@ -21,7 +21,7 @@ export async function execute(interaction: CommandInteraction) {
   try {
     await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
-    const guildSettings = await GuildSettings.findOrCreateByGuildId(
+    const guildSettings = await GuildSettings.findByGuildId(
       interaction.guild!.id
     );
 

@@ -16,7 +16,7 @@ async function handleTextStatsOnMessage(message: Message) {
   const channelId = message.channel.id;
 
   // Check server settings if user tracking is enabled
-  const serverSettings = await GuildSettings.findOrCreateByGuildId(guildId);
+  const serverSettings = await GuildSettings.findByGuildId(guildId);
   if (!serverSettings.getSetting('userTracking')?.enabled) return;
 
   try {

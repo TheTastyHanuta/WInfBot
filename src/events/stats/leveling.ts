@@ -18,7 +18,7 @@ async function handleLevelingOnMessage(message: Message) {
   const guildId = message.guild.id;
   const now = Date.now();
 
-  const guildSettings = await GuildSettings.findOrCreateByGuildId(guildId);
+  const guildSettings = await GuildSettings.findByGuildId(guildId);
 
   // Check if leveling is enabled for this guild
   if (!guildSettings.getSetting('leveling')?.enabled) return;
@@ -41,6 +41,11 @@ async function handleLevelingOnMessage(message: Message) {
 
     // Save the updated stats
     await memberStats.save();
+
+    Logger.debug(
+      'LEVELING',
+      `User ${userId} gained ${xpGained} XP in guild ${guildId}`
+    );
 
     // Update cooldown
     xpCooldowns.set(userId, now);

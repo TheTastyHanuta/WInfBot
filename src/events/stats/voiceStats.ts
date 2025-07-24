@@ -2,6 +2,7 @@ import { VoiceState, Client } from 'discord.js';
 import { VoiceActivity } from '../../models/stats/voiceActivity';
 import { MemberStats } from '../../models/stats/memberStats';
 import { ServerStats } from '../../models/stats/serverStats';
+import { GuildSettings } from '../../models/settings/settings';
 import { Logger } from '../../utils/logger';
 
 async function handleVoiceStateUpdate(
@@ -20,6 +21,10 @@ async function handleVoiceStateUpdate(
 
   const guildId = newState.guild.id;
   const userId = newState.member.id;
+
+  // Check if user tracking is enabled for this guild
+  const guildSettings = await GuildSettings.findOrCreateByGuildId(guildId);
+  if (!guildSettings.getSetting('userTracking')?.enabled) return;
 
   try {
     if (oldState.channelId == null && newState.channelId != null) {

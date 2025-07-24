@@ -18,6 +18,11 @@ async function handleLevelingOnMessage(message: Message) {
   const guildId = message.guild.id;
   const now = Date.now();
 
+  const guildSettings = await GuildSettings.findOrCreateByGuildId(guildId);
+
+  // Check if leveling is enabled for this guild
+  if (!guildSettings.getSetting('leveling')?.enabled) return;
+
   // Check cooldown
   const lastXpTime = xpCooldowns.get(userId);
   if (lastXpTime && now - lastXpTime < XP_COOLDOWN) {
@@ -43,7 +48,6 @@ async function handleLevelingOnMessage(message: Message) {
     // If user leveled up, send congratulation message
     if (leveledUp) {
       // Check guild settings for leveling messages
-      const guildSettings = await GuildSettings.findOrCreateByGuildId(guildId);
       const levelingSettings = guildSettings.getSetting('leveling');
 
       // Only send message if leveling messages are enabled

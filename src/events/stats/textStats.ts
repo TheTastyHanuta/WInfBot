@@ -1,6 +1,7 @@
 import { Message, Client } from 'discord.js';
 import { MemberStats } from '../../models/stats/memberStats';
 import { ServerStats } from '../../models/stats/serverStats';
+import { GuildSettings } from '../../models/settings/settings';
 import { Logger } from '../../utils/logger';
 
 async function handleTextStatsOnMessage(message: Message) {
@@ -13,6 +14,10 @@ async function handleTextStatsOnMessage(message: Message) {
   const userId = message.author.id;
   const guildId = message.guild.id;
   const channelId = message.channel.id;
+
+  // Check server settings if user tracking is enabled
+  const serverSettings = await GuildSettings.findOrCreateByGuildId(guildId);
+  if (!serverSettings.getSetting('userTracking')?.enabled) return;
 
   try {
     // Update Member Stats for text channel

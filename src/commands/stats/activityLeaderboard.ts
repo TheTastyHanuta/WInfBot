@@ -265,68 +265,108 @@ async function createServerLeaderboard(
   const textChannels = serverStats.getAllTextChannelsSorted();
   const voiceChannels = serverStats.getAllVoiceChannelsSorted();
 
-  // Combine both channel types and paginate
-  const allChannels = [
-    ...textChannels.slice(0, 5).map(ch => ({ ...ch, type: 'text' })),
-    ...voiceChannels.slice(0, 5).map(ch => ({ ...ch, type: 'voice' })),
-  ];
+  // Pagination settings - 5 channels per type per page
+  const channelsPerTypePerPage = 5;
+  const totalTextPages = Math.ceil(textChannels.length / channelsPerTypePerPage);
+  const totalVoicePages = Math.ceil(voiceChannels.length / channelsPerTypePerPage);
+  const totalPages = Math.max(1, Math.max(totalTextPages, totalVoicePages));
 
-  const totalPages = Math.max(1, Math.ceil(allChannels.length / 10));
-  const startIndex = page * 10;
-  const endIndex = Math.min(startIndex + 10, allChannels.length);
-  const pageChannels = allChannels.slice(startIndex, endIndex);
+  const startIndex = page * channelsPerTypePerPage;
+  const endIndex = startIndex + channelsPerTypePerPage;
+  
+  const pageTextChannels = textChannels.slice(startIndex, endIndex);
+  const pageVoiceChannels = voiceChannels.slice(startIndex, endIndex);
 
   const embed = new EmbedBuilder()
     .setTitle('📊 Server Activity Leaderboard')
     .setColor(Colors.SECONDARY)
     .setFooter({
-      text: `Page ${page + 1} of ${totalPages} • Top Channels`,
+      text: `Page ${page + 1} of ${totalPages} • ${textChannels.length} text, ${voiceChannels.length} voice channels`,
     })
     .setTimestamp();
 
-  if (pageChannels.length === 0) {
+  if (pageTextChannels.length === 0 && pageVoiceChannels.length === 0) {
     embed.setDescription('No channel statistics available yet!');
   } else {
     let textDescription = '';
     let voiceDescription = '';
 
-    // Separate text and voice channels for display
-    const textChannelsOnPage = pageChannels.filter(ch => ch.type === 'text');
-    const voiceChannelsOnPage = pageChannels.filter(ch => ch.type === 'voice');
+    // Text Channels (Left Side)
+    if (pageTextChannels.length > 0) {
+      textDescription = '**📝 Text Channels**\n';
+      for (let i = 0; i < pageTextChannels.length; i++) {
+        const channel = pageTextChannels[i];
+        const globalPosition = startIndex + i + 1;
 
-    if (textChannelsOnPage.length > 0) {
-      textDescription = '**📝 Top Text Channels:**\n';
-      textChannelsOnPage.forEach((channel, index) => {
-        const position =
-          textChannels.findIndex(ch => ch.channelId === channel.channelId) + 1;
         let medal = '';
-        if (position === 1) medal = '🥇';
-        else if (position === 2) medal = '🥈';
-        else if (position === 3) medal = '🥉';
-        else medal = `**${position}.**`;
+        if (globalPosition === 1) medal = '🥇';
+        else if (globalPosition === 2) medal = '🥈';
+        else if (globalPosition === 3) medal = '🥉';
+        else medal = `**${globalPosition}.**`;
 
         textDescription += `${medal} <#${channel.channelId}>\n`;
-        textDescription += `┗ **${channel.count.toLocaleString()}** Messages\n\n`;
-      });
+        textDescription += `${channel.count.toLocaleString()} messages\n\n`;
+      }
+    } else if (page === 0) {
+      textDescription = '**📝 Text Channels**\nNo text channel data available\n\n';
     }
 
-    if (voiceChannelsOnPage.length > 0) {
-      voiceDescription = '**🔊 Top Voice Channels:**\n';
-      voiceChannelsOnPage.forEach((channel, index) => {
-        const position =
-          voiceChannels.findIndex(ch => ch.channelId === channel.channelId) + 1;
+    // Voice Channels (Right Side)
+    if (pageVoiceChannels.length > 0) {
+      voiceDescription = '**🔊 Voice Channels**\n';
+      for (let i = 0; i < pageVoiceChannels.length; i++) {
+        const channel = pageVoiceChannels[i];
+        const globalPosition = startIndex + i + 1;
+
         let medal = '';
-        if (position === 1) medal = '🥇';
-        else if (position === 2) medal = '🥈';
-        else if (position === 3) medal = '🥉';
-        else medal = `**${position}.**`;
+        if (globalPosition === 1) medal = '🥇';
+        else if (globalPosition === 2) medal = '🥈';
+        else if (globalPosition === 3) medal = '🥉';
+        else medal = `**${globalPosition}.**`;
 
         voiceDescription += `${medal} <#${channel.channelId}>\n`;
-        voiceDescription += `┗ **${formatVoiceTime(channel.count)}** Voice Time\n\n`;
-      });
+        voiceDescription += `${formatVoiceTime(channel.count)}\n\n`;
+      }
+    } else if (page === 0) {
+      voiceDescription = '**🔊 Voice Channels**\nNo voice channel data available\n\n';
     }
 
-    embed.setDescription(textDescription + voiceDescription);
+    // Combine descriptions side by side using fields
+    embed.addFields(
+      {
+        name: '📝 Text Channels',
+        value: pageTextChannels.length > 0 ? 
+          pageTextChannels.map((channel, i) => {
+            const globalPosition = startIndex + i + 1;
+            let medal = '';
+            if (globalPosition === 1) medal = '🥇';
+            else if (globalPosition === 2) medal = '🥈';
+            else if (globalPosition === 3) medal = '🥉';
+            else medal = `**${globalPosition}.**`;
+            return `${medal} <#${channel.channelId}>\n${channel.count.toLocaleString()} messages`;
+          }).join('\n\n') : 'No text channel data available',
+        inline: true
+      },
+      {
+        name: '\u200b',
+        value: '\u200b',
+        inline: true
+      },
+      {
+        name: '🔊 Voice Channels',
+        value: pageVoiceChannels.length > 0 ? 
+          pageVoiceChannels.map((channel, i) => {
+            const globalPosition = startIndex + i + 1;
+            let medal = '';
+            if (globalPosition === 1) medal = '🥇';
+            else if (globalPosition === 2) medal = '🥈';
+            else if (globalPosition === 3) medal = '🥉';
+            else medal = `**${globalPosition}.**`;
+            return `${medal} <#${channel.channelId}>\n${formatVoiceTime(channel.count)}`;
+          }).join('\n\n') : 'No voice channel data available',
+        inline: true
+      }
+    );
   }
 
   const actionRow = createActionRow({

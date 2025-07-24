@@ -13,6 +13,8 @@ import { MemberStats, IMemberStats } from '../../models/stats/memberStats';
 import { ServerStats, IServerStats } from '../../models/stats/serverStats';
 import { Colors } from '../../utils/colors';
 import { Logger } from '../../utils/logger';
+import { formatVoiceTime } from '../../utils/formatVoiceTime';
+import { getUserSafely } from '../../utils/getUserSafely';
 
 interface LeaderboardData {
   type: 'member' | 'server';
@@ -88,7 +90,10 @@ export async function execute(interaction: CommandInteraction) {
                 leaderboardData.page = Math.max(0, leaderboardData.page - 1);
                 break;
               case 'next':
-                leaderboardData.page = Math.min(leaderboardData.totalPages - 1, leaderboardData.page + 1);
+                leaderboardData.page = Math.min(
+                  leaderboardData.totalPages - 1,
+                  leaderboardData.page + 1
+                );
                 break;
               case 'last':
                 leaderboardData.page = leaderboardData.totalPages - 1;
@@ -128,7 +133,11 @@ export async function execute(interaction: CommandInteraction) {
           components: [actionRow],
         });
       } catch (error) {
-        Logger.error('ACTIVITYLEADERBOARD', 'Error handling button interaction:', error as Error);
+        Logger.error(
+          'ACTIVITYLEADERBOARD',
+          'Error handling button interaction:',
+          error as Error
+        );
         await buttonInteraction.reply({
           content: 'An error occurred!',
           flags: MessageFlags.Ephemeral,
@@ -143,17 +152,23 @@ export async function execute(interaction: CommandInteraction) {
           components: [disabledRow],
         });
       } catch (error) {
-        Logger.error('ACTIVITYLEADERBOARD', 'Error disabling buttons:', error as Error);
+        Logger.error(
+          'ACTIVITYLEADERBOARD',
+          'Error disabling buttons:',
+          error as Error
+        );
       }
     });
   } catch (error) {
-    Logger.error('ACTIVITYLEADERBOARD', 'Error executing activity leaderboard command:', error as Error);
+    Logger.error(
+      'ACTIVITYLEADERBOARD',
+      'Error executing activity leaderboard command:',
+      error as Error
+    );
 
     const errorEmbed = new EmbedBuilder()
       .setTitle('❌ Error')
-      .setDescription(
-        'An error occurred while loading the leaderboard!'
-      )
+      .setDescription('An error occurred while loading the leaderboard!')
       .setColor(Colors.ERROR);
 
     if (interaction.replied) {
@@ -419,32 +434,4 @@ function createDisabledActionRow(
 
   row.addComponents(...buttons);
   return row;
-}
-
-async function getUserSafely(
-  client: any,
-  userId: string
-): Promise<User | null> {
-  try {
-    return await client.users.fetch(userId);
-  } catch (error) {
-    Logger.error('ACTIVITYLEADERBOARD', `Failed to fetch user ${userId}:`, error as Error);
-    return null;
-  }
-}
-
-function formatVoiceTime(seconds: number): string {
-  if (seconds < 60) {
-    return `${seconds}s`;
-  } else if (seconds < 3600) {
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
-    return remainingSeconds > 0
-      ? `${minutes}m ${remainingSeconds}s`
-      : `${minutes}m`;
-  } else {
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
-    return minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`;
-  }
 }

@@ -76,10 +76,19 @@ export interface IServerStats extends Document {
 
 // Interface for static methods
 export interface IServerStatsModel extends Model<IServerStats> {
-  /** Find server stats by guild ID */
+  /**
+   * Find server stats by guild ID
+   * @param guildId The ID of the guild
+   * @returns The server stats document or null if not found
+   */
   findByGuild(guildId: string): Promise<IServerStats | null>;
 
-  /** Create new server stats or update existing ones */
+  /**
+   * Create new server stats or update existing ones
+   * @param guildId The ID of the guild
+   * @param updates The updates to apply
+   * @returns The updated server stats document
+   */
   createOrUpdate(
     guildId: string,
     updates: Partial<IServerStats>

@@ -52,20 +52,51 @@ export interface IMemberStats extends Document {
 
 // Interface for static methods
 export interface IMemberStatsModel extends Model<IMemberStats> {
-  /** Find member stats by guild and user ID */
+  /**
+   * Find member stats by guild and user ID
+   * @param guildId The ID of the guild
+   * @param userId The ID of the user
+   * @return The member stats document or null if not found
+   */
   findByGuildAndUser(
     guildId: string,
     userId: string
   ): Promise<IMemberStats | null>;
 
-  /** Get top members by XP in a guild */
+  /**
+   * Get top members by XP in a guild
+   * @param guildId The ID of the guild
+   * @param limit The maximum number of members to return
+   * @return Top members sorted by XP
+   */
   getTopByXP(guildId: string, limit?: number): Promise<IMemberStats[]>;
 
-  /** Get top members by level in a guild */
+  /**
+   * Get top members by level in a guild
+   * @param guildId The ID of the guild
+   * @param limit The maximum number of members to return
+   * @return Top members sorted by level and XP
+   */
   getTopByLevel(guildId: string, limit?: number): Promise<IMemberStats[]>;
 
-  /** Get all members in a guild sorted by level and XP */
+  /**
+   * Get all members in a guild sorted by level and XP
+   * @param guildId The ID of the guild
+   * @returns All members in a guild sorted by level and XP
+   */
   getAllByGuild(guildId: string): Promise<IMemberStats[]>;
+
+  /**
+   * Create new member stats or update existing ones
+   * @param guildId The ID of the guild
+   * @param userId The ID of the user
+   * @param updates The updates to apply
+   */
+  createOrUpdate(
+    guildId: string,
+    userId: string,
+    updates?: Partial<IMemberStats>
+  ): Promise<IMemberStats>;
 }
 
 const memberStatsSchema = new Schema<IMemberStats>(
@@ -146,6 +177,22 @@ memberStatsSchema.statics.getTopByLevel = function (
 
 memberStatsSchema.statics.getAllByGuild = function (guildId: string) {
   return this.find({ guildId }).sort({ level: -1, xp: -1 });
+};
+
+memberStatsSchema.statics.createOrUpdate = function (
+  guildId: string,
+  userId: string,
+  updates: Partial<IMemberStats> = {}
+) {
+  return this.findOneAndUpdate(
+    { guildId, userId },
+    { ...updates, guildId, userId },
+    {
+      upsert: true,
+      new: true,
+      setDefaultsOnInsert: true,
+    }
+  );
 };
 
 memberStatsSchema.methods.addXP = function (amount: number) {

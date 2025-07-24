@@ -16,27 +16,14 @@ async function handleTextStatsOnMessage(message: Message) {
 
   try {
     // Update Member Stats for text channel
-    let memberStats = await MemberStats.findByGuildAndUser(guildId, userId);
-
-    if (!memberStats) {
-      memberStats = new MemberStats({
-        guildId,
-        userId,
-      });
-    }
+    let memberStats = await MemberStats.createOrUpdate(guildId, userId);
 
     // Increment text channel stats for the member
     memberStats.incrementTextChannel(channelId);
     await memberStats.save();
 
     // Update Server Stats for text channel
-    let serverStats = await ServerStats.findByGuild(guildId);
-
-    if (!serverStats) {
-      serverStats = new ServerStats({
-        guildId,
-      });
-    }
+    let serverStats = await ServerStats.createOrUpdate(guildId, {});
 
     // Increment text channel stats for the server
     serverStats.incrementTextChannel(channelId);

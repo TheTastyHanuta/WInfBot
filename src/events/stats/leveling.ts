@@ -26,14 +26,7 @@ async function handleLevelingOnMessage(message: Message) {
 
   try {
     // Find or create member stats
-    let memberStats = await MemberStats.findByGuildAndUser(guildId, userId);
-
-    if (!memberStats) {
-      memberStats = new MemberStats({
-        guildId,
-        userId,
-      });
-    }
+    let memberStats = await MemberStats.createOrUpdate(guildId, userId);
 
     // Generate random XP between 15-25
     const xpGained = Math.floor(Math.random() * 11) + 15;

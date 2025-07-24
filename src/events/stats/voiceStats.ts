@@ -79,20 +79,14 @@ async function handleUserLeftVoice(
 
   // Only update if the duration is positive
   if (duration > 0) {
-    // Update member stats
-    let memberStats = await MemberStats.findByGuildAndUser(guildId, userId);
-    if (!memberStats) {
-      memberStats = new MemberStats({ guildId, userId });
-    }
+    // Update member stats using upsert to avoid duplicate key errors
+    let memberStats = await MemberStats.createOrUpdate(guildId, userId);
 
     memberStats.addVoiceTime(channelId, duration);
     await memberStats.save();
 
-    // Update server stats
-    let serverStats = await ServerStats.findByGuild(guildId);
-    if (!serverStats) {
-      serverStats = new ServerStats({ guildId });
-    }
+    // Update server stats using upsert to avoid duplicate key errors
+    let serverStats = await ServerStats.createOrUpdate(guildId, {});
 
     serverStats.incrementVoiceChannel(channelId, duration);
     await serverStats.save();
@@ -122,20 +116,14 @@ async function handleUserSwitchedChannels(
 
     // Only update if the duration is positive
     if (duration > 0) {
-      // Update member stats for old channel
-      let memberStats = await MemberStats.findByGuildAndUser(guildId, userId);
-      if (!memberStats) {
-        memberStats = new MemberStats({ guildId, userId });
-      }
+      // Update member stats for old channel using upsert to avoid duplicate key errors
+      let memberStats = await MemberStats.createOrUpdate(guildId, userId);
 
       memberStats.addVoiceTime(oldChannelId, duration);
       await memberStats.save();
 
-      // Update server stats for old channel
-      let serverStats = await ServerStats.findByGuild(guildId);
-      if (!serverStats) {
-        serverStats = new ServerStats({ guildId });
-      }
+      // Update server stats for old channel using upsert to avoid duplicate key errors
+      let serverStats = await ServerStats.createOrUpdate(guildId, {});
 
       serverStats.incrementVoiceChannel(oldChannelId, duration);
       await serverStats.save();

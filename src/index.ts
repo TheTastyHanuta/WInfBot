@@ -9,9 +9,11 @@ config();
 
 // Environment configuration
 const isDevelopment = process.env.NODE_ENV === 'development';
-const botToken = isDevelopment ? process.env.TEST_BOT_TOKEN : process.env.BOT_TOKEN;
-const mongoUri = isDevelopment 
-  ? process.env.TEST_MONGO_DB_URI 
+const botToken = isDevelopment
+  ? process.env.TEST_BOT_TOKEN
+  : process.env.BOT_TOKEN;
+const mongoUri = isDevelopment
+  ? process.env.TEST_MONGO_DB_URI
   : process.env.MONGO_DB_URI || 'mongodb://localhost:27017/winfbot';
 
 declare module 'discord.js' {

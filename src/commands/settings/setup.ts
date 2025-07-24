@@ -435,7 +435,7 @@ function createOverviewEmbed(): EmbedBuilder {
         '👋 **Welcome Messages** - Greet new members\n' +
         '👋 **Goodbye Messages** - Farewell messages\n' +
         '🔗 **Invite Tracking** - Track invitations\n' +
-        '👤 **User Tracking** - Track user activities\n' +
+        '👤 **User Tracking** - Track user activities in channels\n' +
         '⭐ **Leveling System** - Experience points and levels\n' +
         '🛡️ **Moderation** - Moderation tools\n' +
         '🎭 **Auto Role** - Automatic role assignment\n' +
@@ -811,7 +811,7 @@ async function createUserTrackingEmbed(
   return new EmbedBuilder()
     .setTitle('👤 User Tracking')
     .setDescription(
-      'General tracking of user activities and statistics.\n\n' +
+      'Track users message amount in each channel and time spent in voice channels.\n\n' +
         `**Status:** ${enabled ? '✅ Enabled' : '❌ Disabled'}`
     )
     .setColor(getStatusColor(enabled))

@@ -1,234 +1,189 @@
 import { Schema, model, models, Document, Model } from 'mongoose';
-import moment = require('moment-timezone');
 
-// Audit Logging Module Types
-export interface IAuditLoggingModules {
-  messageDelete: boolean;
-  messageUpdate: boolean;
-  memberBan: boolean;
-  memberUnban: boolean;
-  memberKick: boolean;
-  channelCreate: boolean;
-  channelDelete: boolean;
-  channelUpdate: boolean;
-  roleCreate: boolean;
-  roleDelete: boolean;
-  roleUpdate: boolean;
-  inviteCreate: boolean;
-  inviteDelete: boolean;
-  eventCreate: boolean;
-  eventUpdate: boolean;
-  eventDelete: boolean;
-}
-
-export interface IAuditLogging {
-  enabled: boolean;
-  channel: string | null;
-  modules: IAuditLoggingModules;
-}
-
-export interface IWelcomeMessages {
-  enabled: boolean;
-  channel: string | null;
-  message: string;
-}
-
-export interface IGoodbyeMessages {
-  enabled: boolean;
-  channel: string | null;
-  message: string;
-}
-
-export interface IInviteTracking {
-  enabled: boolean;
-  channel: string | null;
-}
-
-export interface IUserTracking {
-  enabled: boolean;
-}
-
-export interface ILeveling {
-  enabled: boolean;
-  messages: boolean;
-  channel: string | null;
-}
-
-export interface IModeration {
-  enabled: boolean;
-}
-
-export interface IAutoRole {
-  enabled: boolean;
-  role: string | null;
-}
-
-export interface IBirthdayMessages {
-  enabled: boolean;
-  channel: string | null;
-}
-
-// Main Settings Interface
+// Kompakte Interface Definition
 export interface IGuildSettings {
-  auditLogging: IAuditLogging;
-  welcomeMessages: IWelcomeMessages;
-  goodbyeMessages: IGoodbyeMessages;
-  inviteTracking: IInviteTracking;
-  userTracking: IUserTracking;
-  leveling: ILeveling;
-  moderation: IModeration;
-  autoRole: IAutoRole;
-  birthdayMessages: IBirthdayMessages;
+  auditLogging: {
+    enabled: boolean;
+    channel: string | null;
+    modules: {
+      messageDelete: boolean;
+      messageUpdate: boolean;
+      memberBan: boolean;
+      memberUnban: boolean;
+      memberKick: boolean;
+      channelCreate: boolean;
+      channelDelete: boolean;
+      channelUpdate: boolean;
+      roleCreate: boolean;
+      roleDelete: boolean;
+      roleUpdate: boolean;
+      inviteCreate: boolean;
+      inviteDelete: boolean;
+      eventCreate: boolean;
+      eventUpdate: boolean;
+      eventDelete: boolean;
+    };
+  };
+  welcomeMessages: {
+    enabled: boolean;
+    channel: string | null;
+    message: string;
+  };
+  goodbyeMessages: {
+    enabled: boolean;
+    channel: string | null;
+    message: string;
+  };
+  inviteTracking: {
+    enabled: boolean;
+    channel: string | null;
+  };
+  userTracking: {
+    enabled: boolean;
+  };
+  leveling: {
+    enabled: boolean;
+    messages: boolean;
+    channel: string | null;
+  };
+  moderation: {
+    enabled: boolean;
+  };
+  autoRole: {
+    enabled: boolean;
+    role: string | null;
+  };
+  birthdayMessages: {
+    enabled: boolean;
+    channel: string | null;
+  };
 }
 
-export interface IRestrictedCommand {
-  command: string;
-  channelId: string;
-}
+// Utility type für Setting Paths
+type NestedKeyOf<T extends object> = {
+  [K in keyof T & (string | number)]: T[K] extends object
+    ? `${K}` | `${K}.${NestedKeyOf<T[K]>}`
+    : `${K}`;
+}[keyof T & (string | number)];
 
+export type SettingPath = NestedKeyOf<IGuildSettings>;
+
+// Document Interface
 export interface IGuildSettingsDocument extends Document {
   guildId: string;
   settings: IGuildSettings;
-  restrictedCommands: IRestrictedCommand[];
-  createdAt: Date;
-  updatedAt: Date;
+  restrictedCommands: Array<{ command: string; channelId: string }>;
 
-  // Instance methods
   /**
-   * Updates a specific setting in the guild settings.
-   * @param path The path to the setting to update (e.g., "welcomeMessages.enabled").
-   * @param value The new value for the setting.
+   * Get a specific setting value by its path
+   * @param path The path to the setting
+   * @return The value of the setting
    */
-  updateSetting(path: string, value: any): Promise<IGuildSettingsDocument>;
+  getSetting(path: SettingPath): any;
   /**
-   * Retrieves a specific setting from the guild settings.
-   * @param path The path to the setting to retrieve (e.g., "welcomeMessages.channel").
-   * @returns The value of the setting or undefined if not found.
+   * Update a specific setting value by its path
+   * @param path The path to the setting
+   * @param value The new value for the setting
+   * @return The updated document
    */
-  getSetting(path: string): any;
+  updateSetting(path: SettingPath, value: any): Promise<this>;
   /**
-   * Adds a command restriction for a specific channel.
-   * @param command The command to restrict.
-   * @param channelId The ID of the channel where the command is restricted.
-   * @returns The updated guild settings document.
+   * Add a command to the restricted commands list for a specific channel
+   * @param command The command to restrict
+   * @param channelId The ID of the channel where the command is restricted
+   * @return The updated document
    */
-  addRestrictedCommand(
-    command: string,
-    channelId: string
-  ): Promise<IGuildSettingsDocument>;
+  addRestrictedCommand(command: string, channelId: string): Promise<this>;
   /**
-   * Removes a command restriction for a specific channel or all channels.
-   * @param command The command to remove the restriction for.
-   * @param channelId Optional. The ID of the channel to remove the restriction from. If not provided, removes all restrictions for the command.
-   * @returns The updated guild settings document.
+   * Remove a command from the restricted commands list
+   * @param command The command to remove
+   * @param channelId Optional channel ID to remove restriction from a specific channel
+   * @return The updated document
    */
-  removeRestrictedCommand(
-    command: string,
-    channelId?: string
-  ): Promise<IGuildSettingsDocument>;
+  removeRestrictedCommand(command: string, channelId?: string): Promise<this>;
   /**
-   * Checks if a command is restricted in a specific channel.
-   * @param command The command to check.
-   * @param channelId The ID of the channel to check the restriction in.
-   * @returns True if the command is restricted in the channel, false otherwise.
+   * Check if a command is restricted in a specific channel
+   * @param command The command to check
+   * @param channelId The ID of the channel to check
+   * @return True if the command is restricted, false otherwise
    */
   isCommandRestricted(command: string, channelId: string): boolean;
 }
 
-// Interface for static methods
+// Model Interface
 export interface IGuildSettingsModel extends Model<IGuildSettingsDocument> {
-  /** Find guild settings by guild ID */
+  /**
+   * Find guild settings by guild ID
+   * @param guildId The ID of the guild
+   * @return The guild settings document or null if not found
+   */
   findByGuildId(guildId: string): Promise<IGuildSettingsDocument>;
-  /** Find or create guild settings by guild ID */
+  /**
+   * Find or create guild settings by guild ID
+   * @param guildId The ID of the guild
+   * @return The guild settings document
+   */
   findOrCreateByGuildId(guildId: string): Promise<IGuildSettingsDocument>;
 }
 
-const guildSettingsSchema = new Schema<IGuildSettingsDocument>(
-  {
-    guildId: {
-      type: String,
-      required: true,
-      unique: true,
-    },
-    settings: {
-      type: {
-        auditLogging: {
-          enabled: { type: Boolean, default: false },
-          channel: { type: String, default: null },
-          modules: {
-            messageDelete: { type: Boolean, default: false },
-            messageUpdate: { type: Boolean, default: false },
-            memberBan: { type: Boolean, default: false },
-            memberUnban: { type: Boolean, default: false },
-            memberKick: { type: Boolean, default: false },
-            channelCreate: { type: Boolean, default: false },
-            channelDelete: { type: Boolean, default: false },
-            channelUpdate: { type: Boolean, default: false },
-            roleCreate: { type: Boolean, default: false },
-            roleDelete: { type: Boolean, default: false },
-            roleUpdate: { type: Boolean, default: false },
-            inviteCreate: { type: Boolean, default: false },
-            inviteDelete: { type: Boolean, default: false },
-            eventCreate: { type: Boolean, default: false },
-            eventUpdate: { type: Boolean, default: false },
-            eventDelete: { type: Boolean, default: false },
-          },
-        },
-        welcomeMessages: {
-          enabled: { type: Boolean, default: false },
-          channel: { type: String, default: null },
-          message: { type: String, default: 'Welcome {member} to the server!' },
-        },
-        goodbyeMessages: {
-          enabled: { type: Boolean, default: false },
-          channel: { type: String, default: null },
-          message: {
-            type: String,
-            default: 'Goodbye {member}, we will miss you!',
-          },
-        },
-        inviteTracking: {
-          enabled: { type: Boolean, default: false },
-          channel: { type: String, default: null },
-        },
-        userTracking: {
-          enabled: { type: Boolean, default: false },
-        },
-        leveling: {
-          enabled: { type: Boolean, default: false },
-          messages: { type: Boolean, default: false },
-          channel: { type: String, default: null },
-        },
-        moderation: {
-          enabled: { type: Boolean, default: false },
-        },
-        autoRole: {
-          enabled: { type: Boolean, default: false },
-          role: { type: String, default: null },
-        },
-        birthdayMessages: {
-          enabled: { type: Boolean, default: false },
-          channel: { type: String, default: null },
-        },
-      },
-    },
-    restrictedCommands: {
-      type: [
-        {
-          command: { type: String, required: true },
-          channelId: { type: String, required: true },
-        },
-      ],
-      default: [],
+// Default Settings
+const defaultSettings: IGuildSettings = {
+  auditLogging: {
+    enabled: false,
+    channel: null,
+    modules: {
+      messageDelete: false,
+      messageUpdate: false,
+      memberBan: false,
+      memberUnban: false,
+      memberKick: false,
+      channelCreate: false,
+      channelDelete: false,
+      channelUpdate: false,
+      roleCreate: false,
+      roleDelete: false,
+      roleUpdate: false,
+      inviteCreate: false,
+      inviteDelete: false,
+      eventCreate: false,
+      eventUpdate: false,
+      eventDelete: false,
     },
   },
+  welcomeMessages: {
+    enabled: false,
+    channel: null,
+    message: 'Welcome {member} to the server!',
+  },
+  goodbyeMessages: {
+    enabled: false,
+    channel: null,
+    message: 'Goodbye {member}, we will miss you!',
+  },
+  inviteTracking: { enabled: false, channel: null },
+  userTracking: { enabled: false },
+  leveling: { enabled: false, messages: false, channel: null },
+  moderation: { enabled: false },
+  autoRole: { enabled: false, role: null },
+  birthdayMessages: { enabled: false, channel: null },
+};
+
+// Schema
+const guildSettingsSchema = new Schema<IGuildSettingsDocument>(
   {
-    timestamps: true,
-    collection: 'guildSettings',
-  }
+    guildId: { type: String, required: true, unique: true },
+    settings: { type: Schema.Types.Mixed, default: defaultSettings },
+    restrictedCommands: [
+      {
+        command: { type: String, required: true },
+        channelId: { type: String, required: true },
+      },
+    ],
+  },
+  { timestamps: true, collection: 'guildSettings' }
 );
 
-// Static methods
+// Static Methods
 guildSettingsSchema.statics.findByGuildId = function (guildId: string) {
   return this.findOne({ guildId });
 };
@@ -236,92 +191,61 @@ guildSettingsSchema.statics.findByGuildId = function (guildId: string) {
 guildSettingsSchema.statics.findOrCreateByGuildId = async function (
   guildId: string
 ) {
-  let settings = await this.findOne({ guildId });
-  if (!settings) {
-    settings = new this({
-      guildId,
-      settings: {},
-      restrictedCommands: [],
-    });
-    await settings.save();
-  }
+  const settings = await this.findOneAndUpdate(
+    { guildId },
+    {
+      $setOnInsert: {
+        guildId,
+        settings: defaultSettings,
+        restrictedCommands: [],
+      },
+    },
+    { upsert: true, new: true, setDefaultsOnInsert: true }
+  );
   return settings;
 };
 
-// Instance methods
-guildSettingsSchema.methods.updateSetting = function (
-  path: string,
-  value: any
-) {
-  // Use dot notation to update nested settings
-  // Example: updateSetting('auditLogging.enabled', true)
-  const keys = path.split('.');
-  let current = this.settings;
-
-  for (let i = 0; i < keys.length - 1; i++) {
-    if (!current[keys[i]]) {
-      current[keys[i]] = {};
-    }
-    current = current[keys[i]];
-  }
-
-  current[keys[keys.length - 1]] = value;
-  this.markModified('settings');
-  return this.save();
+// Instance Methods
+guildSettingsSchema.methods.getSetting = function (path: SettingPath) {
+  return path.split('.').reduce((obj, key) => obj?.[key], this.settings);
 };
 
-guildSettingsSchema.methods.getSetting = function (path: string) {
+guildSettingsSchema.methods.updateSetting = function (
+  path: SettingPath,
+  value: any
+) {
   const keys = path.split('.');
-  let current = this.settings;
+  const lastKey = keys.pop()!;
+  const target = keys.reduce((obj, key) => {
+    if (!obj[key]) obj[key] = {};
+    return obj[key];
+  }, this.settings);
 
-  for (const key of keys) {
-    if (current && typeof current === 'object' && key in current) {
-      current = current[key];
-    } else {
-      return undefined;
-    }
-  }
-
-  return current;
+  target[lastKey] = value;
+  this.markModified('settings');
+  return this.save();
 };
 
 guildSettingsSchema.methods.addRestrictedCommand = function (
   command: string,
   channelId: string
 ) {
-  // Check if the restriction already exists
-  const exists = this.restrictedCommands.some(
-    (restriction: IRestrictedCommand) =>
-      restriction.command === command && restriction.channelId === channelId
-  );
-
-  if (!exists) {
+  if (!this.isCommandRestricted(command, channelId)) {
     this.restrictedCommands.push({ command, channelId });
-    return this.save();
   }
-
-  return Promise.resolve(this);
+  return this.save();
 };
 
 guildSettingsSchema.methods.removeRestrictedCommand = function (
   command: string,
   channelId?: string
 ) {
-  if (channelId) {
-    // Remove specific command restriction for specific channel
-    this.restrictedCommands = this.restrictedCommands.filter(
-      (restriction: IRestrictedCommand) =>
-        !(
-          restriction.command === command && restriction.channelId === channelId
-        )
-    );
-  } else {
-    // Remove all restrictions for this command
-    this.restrictedCommands = this.restrictedCommands.filter(
-      (restriction: IRestrictedCommand) => restriction.command !== command
-    );
-  }
-
+  this.restrictedCommands = this.restrictedCommands.filter(
+    (r: { command: string; channelId: string }) =>
+      channelId
+        ? !(r.command === command && r.channelId === channelId)
+        : r.command !== command
+  );
   return this.save();
 };
 
@@ -330,19 +254,14 @@ guildSettingsSchema.methods.isCommandRestricted = function (
   channelId: string
 ) {
   return this.restrictedCommands.some(
-    (restriction: IRestrictedCommand) =>
-      restriction.command === command && restriction.channelId === channelId
+    (r: { command: string; channelId: string }) =>
+      r.command === command && r.channelId === channelId
   );
 };
 
-// Pre-save middleware to update the updatedAt field
-guildSettingsSchema.pre('save', function (next) {
-  this.updatedAt = moment().toDate();
-  next();
-});
-
-export const GuildSettings = ((models.GuildSettings as IGuildSettingsModel) ||
+export const GuildSettings =
+  (models.GuildSettings as IGuildSettingsModel) ||
   model<IGuildSettingsDocument, IGuildSettingsModel>(
     'GuildSettings',
     guildSettingsSchema
-  )) as IGuildSettingsModel;
+  );

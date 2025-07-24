@@ -8,8 +8,12 @@ config();
 
 // Environment configuration
 const isDevelopment = process.env.NODE_ENV === 'development';
-const botToken = isDevelopment ? process.env.TEST_BOT_TOKEN : process.env.BOT_TOKEN;
-const clientId = isDevelopment ? process.env.TEST_BOT_CLIENT_ID : process.env.CLIENT_ID;
+const botToken = isDevelopment
+  ? process.env.TEST_BOT_TOKEN
+  : process.env.BOT_TOKEN;
+const clientId = isDevelopment
+  ? process.env.TEST_BOT_CLIENT_ID
+  : process.env.CLIENT_ID;
 
 const commands = [];
 
@@ -34,22 +38,20 @@ const rest = new REST().setToken(botToken!);
 (async () => {
   try {
     const environment = isDevelopment ? 'DEVELOPMENT' : 'PRODUCTION';
-    Logger.info('DEPLOY', `Register ${commands.length} Slash Commands... (${environment})`);
+    Logger.info(
+      'DEPLOY',
+      `Register ${commands.length} Slash Commands... (${environment})`
+    );
 
-    const data = (await rest.put(
-      Routes.applicationCommands(clientId!),
-      { body: commands }
-    )) as any[];
+    const data = (await rest.put(Routes.applicationCommands(clientId!), {
+      body: commands,
+    })) as any[];
 
     Logger.info(
       'DEPLOY',
       `Successfully registered ${data.length} Slash Commands! (${environment})`
     );
   } catch (error) {
-    Logger.error(
-      'DEPLOY',
-      'Error registering commands',
-      error as Error
-    );
+    Logger.error('DEPLOY', 'Error registering commands', error as Error);
   }
 })();

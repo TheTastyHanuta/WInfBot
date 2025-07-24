@@ -1,6 +1,10 @@
 import { Message, TextChannel, Client } from 'discord.js';
-import { MemberStats } from '../../models/stats/memberStats';
-import { GuildSettings } from '../../models/settings/settings';
+import { MemberStats, IMemberStatsModel } from '../../models/stats/memberStats';
+import {
+  GuildSettings,
+  IGuildSettingsDocument,
+  IGuildSettings,
+} from '../../models/settings/settings';
 import { Logger } from '../../utils/logger';
 
 // Cooldown Map to prevent spam (userId -> last message timestamp)
@@ -53,7 +57,9 @@ async function handleLevelingOnMessage(message: Message) {
     // If user leveled up, send congratulation message
     if (leveledUp) {
       // Check guild settings for leveling messages
-      const levelingSettings = guildSettings.getSetting('leveling');
+      const levelingSettings = guildSettings.getSetting(
+        'leveling'
+      ) as IGuildSettings['leveling'];
 
       // Only send message if leveling messages are enabled
       if (levelingSettings?.enabled && levelingSettings?.messages) {

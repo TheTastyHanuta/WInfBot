@@ -1,4 +1,10 @@
-import { Client, GatewayIntentBits, Collection, Partials, ActivityType } from 'discord.js';
+import {
+  Client,
+  GatewayIntentBits,
+  Collection,
+  Partials,
+  ActivityType,
+} from 'discord.js';
 import { config } from 'dotenv';
 import mongoose from 'mongoose';
 import { setupCommandHandler } from './handlers/commandhandler';
@@ -84,6 +90,13 @@ client.once('ready', async () => {
     'BOT',
     `Bot version: ${process.env.npm_package_version} (${environment})`
   );
+  const buildDate = new Date(process.env.npm_package_time_build || Date.now());
+  Logger.info(
+    'BOT',
+    `Build date: ${buildDate.toLocaleString('de-DE', {
+      timeZone: 'Europe/Berlin',
+    })}`
+  );
 
   // Display watching status
   const totalGuilds = client.guilds.cache.size;
@@ -93,11 +106,7 @@ client.once('ready', async () => {
     `in ${totalGuilds} guilds, ${totalUsers} users, ${totalChannels} channels`,
     { type: ActivityType.Watching }
   );*/
-  client.user?.setActivity(
-    `Roblox tax fraud`,
-    { type: ActivityType.Playing }
-  );
-
+  client.user?.setActivity(`Roblox tax fraud`, { type: ActivityType.Playing });
 });
 
 // Bot Login

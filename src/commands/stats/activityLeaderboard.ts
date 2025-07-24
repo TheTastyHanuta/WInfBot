@@ -267,13 +267,17 @@ async function createServerLeaderboard(
 
   // Pagination settings - 5 channels per type per page
   const channelsPerTypePerPage = 5;
-  const totalTextPages = Math.ceil(textChannels.length / channelsPerTypePerPage);
-  const totalVoicePages = Math.ceil(voiceChannels.length / channelsPerTypePerPage);
+  const totalTextPages = Math.ceil(
+    textChannels.length / channelsPerTypePerPage
+  );
+  const totalVoicePages = Math.ceil(
+    voiceChannels.length / channelsPerTypePerPage
+  );
   const totalPages = Math.max(1, Math.max(totalTextPages, totalVoicePages));
 
   const startIndex = page * channelsPerTypePerPage;
   const endIndex = startIndex + channelsPerTypePerPage;
-  
+
   const pageTextChannels = textChannels.slice(startIndex, endIndex);
   const pageVoiceChannels = voiceChannels.slice(startIndex, endIndex);
 
@@ -308,7 +312,8 @@ async function createServerLeaderboard(
         textDescription += `${channel.count.toLocaleString()} messages\n\n`;
       }
     } else if (page === 0) {
-      textDescription = '**📝 Text Channels**\nNo text channel data available\n\n';
+      textDescription =
+        '**📝 Text Channels**\nNo text channel data available\n\n';
     }
 
     // Voice Channels (Right Side)
@@ -328,43 +333,52 @@ async function createServerLeaderboard(
         voiceDescription += `${formatVoiceTime(channel.count)}\n\n`;
       }
     } else if (page === 0) {
-      voiceDescription = '**🔊 Voice Channels**\nNo voice channel data available\n\n';
+      voiceDescription =
+        '**🔊 Voice Channels**\nNo voice channel data available\n\n';
     }
 
     // Combine descriptions side by side using fields
     embed.addFields(
       {
         name: '📝 Text Channels',
-        value: pageTextChannels.length > 0 ? 
-          pageTextChannels.map((channel, i) => {
-            const globalPosition = startIndex + i + 1;
-            let medal = '';
-            if (globalPosition === 1) medal = '🥇';
-            else if (globalPosition === 2) medal = '🥈';
-            else if (globalPosition === 3) medal = '🥉';
-            else medal = `**${globalPosition}.**`;
-            return `${medal} <#${channel.channelId}>\n${channel.count.toLocaleString()} messages`;
-          }).join('\n\n') : 'No text channel data available',
-        inline: true
+        value:
+          pageTextChannels.length > 0
+            ? pageTextChannels
+                .map((channel, i) => {
+                  const globalPosition = startIndex + i + 1;
+                  let medal = '';
+                  if (globalPosition === 1) medal = '🥇';
+                  else if (globalPosition === 2) medal = '🥈';
+                  else if (globalPosition === 3) medal = '🥉';
+                  else medal = `**${globalPosition}.**`;
+                  return `${medal} <#${channel.channelId}>\n${channel.count.toLocaleString()} messages`;
+                })
+                .join('\n\n')
+            : 'No text channel data available',
+        inline: true,
       },
       {
         name: '\u200b',
         value: '\u200b',
-        inline: true
+        inline: true,
       },
       {
         name: '🔊 Voice Channels',
-        value: pageVoiceChannels.length > 0 ? 
-          pageVoiceChannels.map((channel, i) => {
-            const globalPosition = startIndex + i + 1;
-            let medal = '';
-            if (globalPosition === 1) medal = '🥇';
-            else if (globalPosition === 2) medal = '🥈';
-            else if (globalPosition === 3) medal = '🥉';
-            else medal = `**${globalPosition}.**`;
-            return `${medal} <#${channel.channelId}>\n${formatVoiceTime(channel.count)}`;
-          }).join('\n\n') : 'No voice channel data available',
-        inline: true
+        value:
+          pageVoiceChannels.length > 0
+            ? pageVoiceChannels
+                .map((channel, i) => {
+                  const globalPosition = startIndex + i + 1;
+                  let medal = '';
+                  if (globalPosition === 1) medal = '🥇';
+                  else if (globalPosition === 2) medal = '🥈';
+                  else if (globalPosition === 3) medal = '🥉';
+                  else medal = `**${globalPosition}.**`;
+                  return `${medal} <#${channel.channelId}>\n${formatVoiceTime(channel.count)}`;
+                })
+                .join('\n\n')
+            : 'No voice channel data available',
+        inline: true,
       }
     );
   }

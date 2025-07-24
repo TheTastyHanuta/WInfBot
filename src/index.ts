@@ -1,4 +1,4 @@
-import { Client, GatewayIntentBits, Collection, Partials } from 'discord.js';
+import { Client, GatewayIntentBits, Collection, Partials, ActivityType } from 'discord.js';
 import { config } from 'dotenv';
 import mongoose from 'mongoose';
 import { setupCommandHandler } from './handlers/commandhandler';
@@ -70,6 +70,34 @@ client.once('ready', async () => {
   // Setup handlers
   setupCommandHandler(client);
   setupEventHandler(client);
+
+  // Log bot statistics
+  Logger.info(
+    'BOT',
+    `Bot statistics: ${client.guilds.cache.size} guilds, ${client.users.cache.size} users, ${client.channels.cache.size} channels`
+  );
+  Logger.info(
+    'BOT',
+    `Bot started in ${Date.now() - client.readyTimestamp!}ms (${environment})`
+  );
+  Logger.info(
+    'BOT',
+    `Bot version: ${process.env.npm_package_version} (${environment})`
+  );
+
+  // Display watching status
+  const totalGuilds = client.guilds.cache.size;
+  const totalUsers = client.users.cache.size;
+  const totalChannels = client.channels.cache.size;
+  /*client.user?.setActivity(
+    `in ${totalGuilds} guilds, ${totalUsers} users, ${totalChannels} channels`,
+    { type: ActivityType.Watching }
+  );*/
+  client.user?.setActivity(
+    `Roblox tax fraud`,
+    { type: ActivityType.Playing }
+  );
+
 });
 
 // Bot Login

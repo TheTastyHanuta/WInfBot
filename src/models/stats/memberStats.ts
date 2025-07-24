@@ -91,6 +91,7 @@ export interface IMemberStatsModel extends Model<IMemberStats> {
    * @param guildId The ID of the guild
    * @param userId The ID of the user
    * @param updates The updates to apply
+   * @return The created or updated member stats document
    */
   createOrUpdate(
     guildId: string,
@@ -211,9 +212,9 @@ memberStatsSchema.methods.addXP = function (amount: number) {
 memberStatsSchema.methods.getXPRequiredForLevel = function (
   level: number
 ): number {
-  // Progressive formula: Base 100 XP, +10% per level
-  // Level 1→2: 100 XP, Level 2→3: 110 XP, Level 3→4: 121 XP, etc.
-  return Math.floor(100 * Math.pow(1.1, level - 2));
+  // Progressive formula: Base 100 XP, +20% per level
+  // Level 1→2: 100 XP, Level 2→3: 120 XP, Level 3→4: 144 XP, etc.
+  return Math.floor(100 * Math.pow(1.2, level - 2));
 };
 
 // Calculate XP remaining until next level

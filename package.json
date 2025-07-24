@@ -8,6 +8,7 @@
     "start:prod": "NODE_ENV=production node dist/index.js",
     "build": "tsup 'src/**/*.ts' --format cjs --out-dir dist --clean",
     "deploy": "tsx src/deploy-commands.ts",
+    "migrate": "tsx src/scripts/moveDatabase.ts",
     "format:check": "prettier --check .",
     "format": "prettier --write src/**/*.{ts,js,json}"
   },

@@ -322,7 +322,7 @@ async function createServerLeaderboard(
         else medal = `**${position}.**`;
 
         voiceDescription += `${medal} <#${channel.channelId}>\n`;
-        voiceDescription += `┗ **${channel.count.toLocaleString()}** Activities\n\n`;
+        voiceDescription += `┗ **${formatVoiceTime(channel.count)}** Voice Time\n\n`;
       });
     }
 

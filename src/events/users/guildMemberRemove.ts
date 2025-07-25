@@ -3,7 +3,6 @@ import { MemberStats } from '../../models/stats/memberStats';
 import { VoiceActivity } from '../../models/stats/voiceActivity';
 import { Logger } from '../../utils/logger';
 
-
 // Delete all member stats and voice activity data when a member leaves the guild
 async function handleGuildMemberRemove(member: GuildMember, client: Client) {
   const guildId = member.guild.id;
@@ -18,9 +17,9 @@ async function handleGuildMemberRemove(member: GuildMember, client: Client) {
 
   try {
     // Delete Member Stats for this user in this guild
-    const deletedMemberStats = await MemberStats.deleteMany({ 
-      guildId, 
-      userId 
+    const deletedMemberStats = await MemberStats.deleteMany({
+      guildId,
+      userId,
     });
     Logger.debug(
       'GUILD_MEMBER_REMOVE',
@@ -28,9 +27,9 @@ async function handleGuildMemberRemove(member: GuildMember, client: Client) {
     );
 
     // Delete Voice Activity entries for this user in this guild
-    const deletedVoiceActivity = await VoiceActivity.deleteMany({ 
-      guildId, 
-      userId 
+    const deletedVoiceActivity = await VoiceActivity.deleteMany({
+      guildId,
+      userId,
     });
     Logger.debug(
       'GUILD_MEMBER_REMOVE',

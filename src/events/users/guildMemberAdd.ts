@@ -5,9 +5,6 @@ import {
 } from '../../models/settings/settings';
 import { Logger } from '../../utils/logger';
 import { OpenAI } from 'openai';
-import { config } from 'dotenv';
-
-config();
 
 async function handleGuildMemberAdd(member: GuildMember, client: Client) {
   const guildId = member.guild.id;
@@ -89,7 +86,10 @@ async function handleGuildMemberAdd(member: GuildMember, client: Client) {
             `AI-generated welcome message for ${userName} in ${guildName}: ${aiMessage}`
           );
           // Replace username in AI message
-          aiMessage = aiMessage.replace(`${member.user.username}`, `<@${userId}>`);
+          aiMessage = aiMessage.replace(
+            `${member.user.username}`,
+            `<@${userId}>`
+          );
 
           Logger.debug(
             'GUILD_MEMBER_ADD',

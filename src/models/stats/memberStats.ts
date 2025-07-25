@@ -37,6 +37,11 @@ export interface IMemberStats extends Document {
   getLevelProgress(): number;
 
   /**
+   * @returns The current rank (position) of this member in the guild
+   */
+  getRankInGuild(): Promise<number>;
+
+  /**
    * Increments the message count and the count for a specific text channel.
    * @param channelId The ID of the text channel where the message was sent.
    */
@@ -242,6 +247,24 @@ memberStatsSchema.methods.addVoiceTime = function (
   const currentTime = this.voiceChannels.get(channelId) || 0;
   this.voiceChannels.set(channelId, currentTime + timeInSeconds);
   this.voiceTime += timeInSeconds;
+};
+
+// Calculate the current rank (position) of this member in the guild
+memberStatsSchema.methods.getRankInGuild = async function (): Promise<number> {
+  const MemberStatsModel = this.constructor as IMemberStatsModel;
+  const rank =
+    (await MemberStatsModel.countDocuments({
+      guildId: this.guildId,
+      $or: [
+        { level: { $gt: this.level } },
+        {
+          level: this.level,
+          xp: { $gt: this.xp },
+        },
+      ],
+    })) + 1;
+
+  return rank;
 };
 
 export const MemberStats = ((models.MemberStats as IMemberStatsModel) ||

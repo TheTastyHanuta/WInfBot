@@ -73,6 +73,8 @@ export interface IGuildSettingsDocument extends Document {
   guildId: string;
   settings: IGuildSettings;
   restrictedCommands: Array<{ command: string; channelId: string }>;
+  updatedAt: Date;
+  createdAt: Date;
 
   /**
    * Get a specific setting value by its path

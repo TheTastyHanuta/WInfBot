@@ -9,6 +9,7 @@ import { config } from 'dotenv';
 import mongoose from 'mongoose';
 import { setupCommandHandler } from './handlers/commandhandler';
 import { setupEventHandler } from './handlers/eventhandler';
+import initializeMensaCron from './handlers/mensa';
 import { Logger } from './utils/logger';
 
 config();
@@ -76,6 +77,7 @@ client.once('ready', async () => {
   // Setup handlers
   setupCommandHandler(client);
   setupEventHandler(client);
+  initializeMensaCron(client);
 
   // Log bot statistics
   Logger.info(

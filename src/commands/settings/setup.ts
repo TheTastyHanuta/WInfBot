@@ -443,7 +443,7 @@ function createOverviewEmbed(): EmbedBuilder {
         'Click "Next" to begin!'
     )
     .setColor(Colors.PRIMARY)
-    .setFooter({ text: 'Step 1 of 11' });
+    .setFooter({ text: 'Step 1 of 11 | WInfBot Setup' });
 }
 
 function createOverviewComponents(): ActionRowBuilder<any>[] {
@@ -469,7 +469,7 @@ async function createAuditLoggingEmbed(
         `**Active Modules:** ${enabledModules.length > 0 ? enabledModules.join(', ') : 'None'}`
     )
     .setColor(getStatusColor(enabled))
-    .setFooter({ text: 'Step 2 of 11' });
+    .setFooter({ text: 'Step 2 of 11 | WInfBot Setup' });
 }
 
 async function createAuditLoggingComponents(
@@ -615,7 +615,7 @@ async function createWelcomeMessagesEmbed(
         '*Run /welcome-message to configure the welcome message.*'
     )
     .setColor(getStatusColor(enabled))
-    .setFooter({ text: 'Step 3 of 11' });
+    .setFooter({ text: 'Step 3 of 11 | WInfBot Setup' });
 }
 
 async function createWelcomeMessagesComponents(
@@ -685,7 +685,7 @@ async function createGoodbyeMessagesEmbed(
         '*Run /goodbye-message to configure the goodbye message.*'
     )
     .setColor(getStatusColor(enabled))
-    .setFooter({ text: 'Step 4 of 11' });
+    .setFooter({ text: 'Step 4 of 11 | WInfBot Setup' });
 }
 
 async function createGoodbyeMessagesComponents(
@@ -751,7 +751,7 @@ async function createInviteTrackingEmbed(
         `**Channel:** ${channel ? `<#${channel}>` : 'Not set'}`
     )
     .setColor(getStatusColor(enabled))
-    .setFooter({ text: 'Step 5 of 11' });
+    .setFooter({ text: 'Step 5 of 11 | WInfBot Setup' });
 }
 
 async function createInviteTrackingComponents(
@@ -815,7 +815,7 @@ async function createUserTrackingEmbed(
         `**Status:** ${enabled ? '✅ Enabled' : '❌ Disabled'}`
     )
     .setColor(getStatusColor(enabled))
-    .setFooter({ text: 'Step 6 of 11' });
+    .setFooter({ text: 'Step 6 of 11 | WInfBot Setup' });
 }
 
 async function createUserTrackingComponents(
@@ -870,7 +870,7 @@ async function createLevelingEmbed(
         `**Channel:** ${channel ? `<#${channel}>` : 'Current channel'}`
     )
     .setColor(getStatusColor(enabled))
-    .setFooter({ text: 'Step 7 of 11' });
+    .setFooter({ text: 'Step 7 of 11 | WInfBot Setup' });
 }
 
 async function createLevelingComponents(
@@ -961,7 +961,7 @@ async function createModerationEmbed(
         `**Status:** ${enabled ? '✅ Enabled' : '❌ Disabled'}`
     )
     .setColor(getStatusColor(enabled))
-    .setFooter({ text: 'Step 8 of 11' });
+    .setFooter({ text: 'Step 8 of 11 | WInfBot Setup' });
 }
 
 async function createModerationComponents(
@@ -1009,12 +1009,12 @@ async function createAutoRoleEmbed(
   return new EmbedBuilder()
     .setTitle('🎭 Auto Role')
     .setDescription(
-      'Automatically assign a role to new members.\n\n' +
+      "Automatically assign a role to new members.\nPlease make sure the role is below the bot's highest role.\n\n" +
         `**Status:** ${enabled ? '✅ Enabled' : '❌ Disabled'}\n` +
         `**Role:** ${role ? `<@&${role}>` : 'Not set'}`
     )
     .setColor(getStatusColor(enabled))
-    .setFooter({ text: 'Step 9 of 11' });
+    .setFooter({ text: 'Step 9 of 11 | WInfBot Setup' });
 }
 
 async function createAutoRoleComponents(
@@ -1078,7 +1078,7 @@ async function createBirthdayMessagesEmbed(
         `**Channel:** ${channel ? `<#${channel}>` : 'Not set'}`
     )
     .setColor(getStatusColor(enabled))
-    .setFooter({ text: 'Step 10 of 11' });
+    .setFooter({ text: 'Step 10 of 11 | WInfBot Setup' });
 }
 
 async function createBirthdayMessagesComponents(
@@ -1134,14 +1134,14 @@ function createCompletionEmbed(): EmbedBuilder {
     .setTitle('🎉 Setup Complete!')
     .setDescription(
       'Congratulations! You have successfully configured all bot settings.\n\n' +
-        '**What happens now?**\n' +
+        "Wasn't that hard, was it?\n" +
         '✅ All your settings have been saved\n' +
         '✅ The bot is now configured accordingly\n' +
         '✅ You can change individual settings anytime using other commands\n\n' +
-        'Thank you for taking the time to set up the bot! 🚀'
+        'Thank you for taking the time to set up the bot! :3'
     )
     .setColor(Colors.SUCCESS)
-    .setFooter({ text: 'Setup complete!' });
+    .setFooter({ text: 'Setup complete! | WInfBot Setup' });
 }
 
 function createCompletionComponents(): ActionRowBuilder<any>[] {

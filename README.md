@@ -68,8 +68,8 @@ A Discord bot designed for the Wirtschaftsinformatik Discord Server at FAU Erlan
    TEST_CLIENT_ID=your_development_client_id
    
    # Database
-   MONGO_DB_URI=mongodb://localhost:27017/winfbot
-   TEST_MONGO_DB_URI=mongodb://localhost:27017/winfbot-dev
+   MONGO_DB_URI=your_mongodb_uri
+   TEST_MONGO_DB_URI=your_test_mongodb_uri
    
    # Optional
    OPEN_AI_API_KEY=your_openai_key_for_ai_welcome_messages
@@ -154,10 +154,6 @@ This bot is specifically designed for the FAU Wirtschaftsinformatik community. W
 ## 📄 License
 
 CC0 License - see license file for details
-
-## 🏫 About
-
-Developed for the Wirtschaftsinformatik study program discord server at Friedrich-Alexander-Universität Erlangen-Nürnberg (FAU).
 
 ---
 

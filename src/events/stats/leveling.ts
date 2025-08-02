@@ -9,7 +9,7 @@ import { Logger } from '../../utils/logger';
 
 // Cooldown Map to prevent spam (userId -> last message timestamp)
 const xpCooldowns = new Map<string, number>();
-const XP_COOLDOWN = 1000; // 1 second cooldown between XP gains
+const XP_COOLDOWN = 2000; // 2 second cooldown between XP gains
 
 async function handleLevelingOnMessage(message: Message) {
   // Ignore bot messages
@@ -37,8 +37,8 @@ async function handleLevelingOnMessage(message: Message) {
     // Find or create member stats
     let memberStats = await MemberStats.createOrUpdate(guildId, userId);
 
-    // Generate random XP between 15-25
-    const xpGained = Math.floor(Math.random() * 11) + 15;
+    // Generate random XP between 10-15
+    const xpGained = Math.floor(Math.random() * 6) + 10;
 
     // Add XP and check for level up
     const leveledUp = memberStats.addXP(xpGained);

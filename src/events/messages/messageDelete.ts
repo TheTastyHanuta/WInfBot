@@ -119,7 +119,7 @@ async function handleMessageDelete(message: Message) {
     // Create embed
     const embed = new EmbedBuilder()
       .setTitle('🗑️ Message Deleted')
-      .setColor(Colors.AUDIT_LOG)
+      .setColor(Colors.MODERATION)
       .setAuthor({
         name: `${message.author.displayName} (${message.author.tag})`,
         iconURL: message.author.displayAvatarURL(),

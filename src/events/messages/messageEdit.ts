@@ -89,7 +89,7 @@ async function handleMessageUpdate(oldMessage: Message, newMessage: Message) {
     // Create embed
     const embed = new EmbedBuilder()
       .setTitle('📝 Message Edited')
-      .setColor(Colors.AUDIT_LOG)
+      .setColor(Colors.LEVELING)
       .setAuthor({
         name: `${newMessage.author.displayName} (${newMessage.author.tag})`,
         iconURL: newMessage.author.displayAvatarURL(),

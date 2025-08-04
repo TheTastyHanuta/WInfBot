@@ -160,7 +160,7 @@ async function handleMessageDelete(message: Message) {
     } else {
       embed.addFields({
         name: '👤 Deleted By',
-        value: `<@${message.author.id}> or Unknown`,
+        value: `<@${message.author.id}>`,
         inline: true,
       });
     }
@@ -183,25 +183,77 @@ async function handleMessageDelete(message: Message) {
     // Add attachment information if present
     if (message.attachments.size > 0) {
       const attachmentList = message.attachments
-        .map(
-          attachment =>
-            `• ${attachment.name} (${(attachment.size / 1024).toFixed(1)} KB)`
-        )
+        .map(attachment => {
+          const sizeKB = (attachment.size / 1024).toFixed(1);
+          const dimensions = attachment.width && attachment.height ? 
+            ` (${attachment.width}x${attachment.height})` : '';
+          return `• **${attachment.name}** - ${sizeKB} KB${dimensions}\n  URL: ${attachment.url}`;
+        })
         .join('\n');
 
       embed.addFields({
         name: '📎 Attachments',
-        value: `${message.attachments.size} file(s):\n${truncateText(attachmentList, 512)}`,
+        value: `${message.attachments.size} file(s):\n${truncateText(attachmentList, 1000)}`,
         inline: false,
       });
     }
 
     // Add embed information if present
     if (message.embeds.length > 0) {
+      const embedDetails = message.embeds
+        .map((messageEmbed, index) => {
+          let details = `**Embed ${index + 1}:**`;
+          
+          if (messageEmbed.title) {
+            details += `\n• Title: ${truncateText(messageEmbed.title, 100)}`;
+          }
+          
+          if (messageEmbed.description) {
+            details += `\n• Description: ${truncateText(messageEmbed.description, 150)}`;
+          }
+          
+          if (messageEmbed.url) {
+            details += `\n• URL: ${messageEmbed.url}`;
+          }
+          
+          if (messageEmbed.author?.name) {
+            details += `\n• Author: ${messageEmbed.author.name}`;
+          }
+          
+          if (messageEmbed.footer?.text) {
+            details += `\n• Footer: ${truncateText(messageEmbed.footer.text, 100)}`;
+          }
+          
+          if (messageEmbed.fields && messageEmbed.fields.length > 0) {
+            details += `\n• Fields: ${messageEmbed.fields.length} field(s)`;
+            messageEmbed.fields.slice(0, 3).forEach((field, fieldIndex) => {
+              details += `\n  - ${truncateText(field.name, 50)}: ${truncateText(field.value, 100)}`;
+            });
+            if (messageEmbed.fields.length > 3) {
+              details += `\n  - ... and ${messageEmbed.fields.length - 3} more field(s)`;
+            }
+          }
+          
+          if (messageEmbed.image?.url) {
+            details += `\n• Image: ${messageEmbed.image.url}`;
+          }
+          
+          if (messageEmbed.thumbnail?.url) {
+            details += `\n• Thumbnail: ${messageEmbed.thumbnail.url}`;
+          }
+          
+          if (messageEmbed.color) {
+            details += `\n• Color: #${messageEmbed.color.toString(16).padStart(6, '0')}`;
+          }
+          
+          return details;
+        })
+        .join('\n\n');
+
       embed.addFields({
         name: '📊 Embeds',
-        value: `${message.embeds.length} embed(s) were present`,
-        inline: true,
+        value: truncateText(embedDetails, 1000),
+        inline: false,
       });
     }
 

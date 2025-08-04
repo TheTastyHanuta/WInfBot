@@ -185,8 +185,10 @@ async function handleMessageDelete(message: Message) {
       const attachmentList = message.attachments
         .map(attachment => {
           const sizeKB = (attachment.size / 1024).toFixed(1);
-          const dimensions = attachment.width && attachment.height ? 
-            ` (${attachment.width}x${attachment.height})` : '';
+          const dimensions =
+            attachment.width && attachment.height
+              ? ` (${attachment.width}x${attachment.height})`
+              : '';
           return `• **${attachment.name}** - ${sizeKB} KB${dimensions}\n  URL: ${attachment.url}`;
         })
         .join('\n');
@@ -203,27 +205,27 @@ async function handleMessageDelete(message: Message) {
       const embedDetails = message.embeds
         .map((messageEmbed, index) => {
           let details = `**Embed ${index + 1}:**`;
-          
+
           if (messageEmbed.title) {
             details += `\n• Title: ${truncateText(messageEmbed.title, 100)}`;
           }
-          
+
           if (messageEmbed.description) {
             details += `\n• Description: ${truncateText(messageEmbed.description, 150)}`;
           }
-          
+
           if (messageEmbed.url) {
             details += `\n• URL: ${messageEmbed.url}`;
           }
-          
+
           if (messageEmbed.author?.name) {
             details += `\n• Author: ${messageEmbed.author.name}`;
           }
-          
+
           if (messageEmbed.footer?.text) {
             details += `\n• Footer: ${truncateText(messageEmbed.footer.text, 100)}`;
           }
-          
+
           if (messageEmbed.fields && messageEmbed.fields.length > 0) {
             details += `\n• Fields: ${messageEmbed.fields.length} field(s)`;
             messageEmbed.fields.slice(0, 3).forEach((field, fieldIndex) => {
@@ -233,19 +235,19 @@ async function handleMessageDelete(message: Message) {
               details += `\n  - ... and ${messageEmbed.fields.length - 3} more field(s)`;
             }
           }
-          
+
           if (messageEmbed.image?.url) {
             details += `\n• Image: ${messageEmbed.image.url}`;
           }
-          
+
           if (messageEmbed.thumbnail?.url) {
             details += `\n• Thumbnail: ${messageEmbed.thumbnail.url}`;
           }
-          
+
           if (messageEmbed.color) {
             details += `\n• Color: #${messageEmbed.color.toString(16).padStart(6, '0')}`;
           }
-          
+
           return details;
         })
         .join('\n\n');

@@ -1,9 +1,18 @@
-import { Collection, Message, EmbedBuilder, TextChannel, AuditLogEvent, PartialMessage } from 'discord.js';
+import {
+  Collection,
+  Message,
+  EmbedBuilder,
+  TextChannel,
+  AuditLogEvent,
+  PartialMessage,
+} from 'discord.js';
 import { GuildSettings } from '../../models/settings/settings';
 import { Logger } from '../../utils/logger';
 import { Colors } from '../../utils/colors';
 
-async function handleMessageBulkDelete(messages: Collection<string, Message | PartialMessage>) {
+async function handleMessageBulkDelete(
+  messages: Collection<string, Message | PartialMessage>
+) {
   // Get the first message to access guild information
   const firstMessage = messages.first();
   if (!firstMessage || !firstMessage.guild) return;
@@ -51,7 +60,9 @@ async function handleMessageBulkDelete(messages: Collection<string, Message | Pa
     }
 
     // Get the audit channel
-    const auditChannel = guild.channels.cache.get(auditChannelId) as TextChannel;
+    const auditChannel = guild.channels.cache.get(
+      auditChannelId
+    ) as TextChannel;
     if (!auditChannel) {
       Logger.warn(
         'MESSAGE_BULK_DELETE',
@@ -102,7 +113,7 @@ async function handleMessageBulkDelete(messages: Collection<string, Message | Pa
 
     // Get channel information
     const channel = firstMessage.channel as TextChannel;
-    
+
     // Filter out bot messages and partial messages for statistics
     const userMessages = messages.filter(msg => msg.author && !msg.author.bot);
     const messagesByUser = new Map<string, number>();
@@ -115,11 +126,11 @@ async function handleMessageBulkDelete(messages: Collection<string, Message | Pa
         const userId = message.author.id;
         messagesByUser.set(userId, (messagesByUser.get(userId) || 0) + 1);
       }
-      
+
       if (message.attachments) {
         totalAttachments += message.attachments.size;
       }
-      
+
       if (message.embeds) {
         totalEmbeds += message.embeds.length;
       }
@@ -186,7 +197,7 @@ async function handleMessageBulkDelete(messages: Collection<string, Message | Pa
         if (contentInfo) contentInfo += '\n';
         contentInfo += `📊 ${totalEmbeds} embed(s)`;
       }
-      
+
       embed.addFields({
         name: '📄 Content Summary',
         value: contentInfo,
@@ -239,16 +250,19 @@ async function handleMessageBulkDelete(messages: Collection<string, Message | Pa
 
       const messageList = recentMessagesWithContent
         .map((msg: Message | PartialMessage) => {
-          const timestamp = msg.createdTimestamp ? 
-            `<t:${Math.floor(msg.createdTimestamp / 1000)}:t>` : 'Unknown time';
-          const author = msg.author ? `${msg.author.displayName}` : 'Unknown user';
+          const timestamp = msg.createdTimestamp
+            ? `<t:${Math.floor(msg.createdTimestamp / 1000)}:t>`
+            : 'Unknown time';
+          const author = msg.author
+            ? `${msg.author.displayName}`
+            : 'Unknown user';
           const content = truncateText(msg.content || '', 100);
           return `**${author}** (${timestamp}):\n\`\`\`${content}\`\`\``;
         })
         .join('\n\n');
 
       sampleEmbed.setDescription(truncateText(messageList, 4000));
-      
+
       if (userMessages.size > 5) {
         sampleEmbed.setFooter({
           text: `Showing 5 of ${userMessages.size} user messages with content`,

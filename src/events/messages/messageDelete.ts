@@ -261,14 +261,12 @@ async function handleMessageDelete(message: Message) {
 
     // Add reaction information if present
     if (message.reactions.cache.size > 0) {
-      const reactionCount = message.reactions.cache.reduce(
-        (total, reaction) => total + reaction.count,
-        0
-      );
       embed.addFields({
-        name: '😀 Reactions',
-        value: `${reactionCount} reaction(s) on ${message.reactions.cache.size} emoji(s)`,
-        inline: true,
+        name: ':melting_face: Reactions',
+        value: `${message.reactions.cache
+          .map(reaction => `${reaction.emoji.name} - ${reaction.count}`)
+          .join('\n')}`,
+        inline: false,
       });
     }
 

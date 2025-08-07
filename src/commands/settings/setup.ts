@@ -23,7 +23,7 @@ import {
   IGuildSettingsDocument,
 } from '../../models/settings/settings';
 import { Logger } from '../../utils/logger';
-import { Colors, getStatusColor, getFeatureColor } from '../../utils/colors';
+import { Colors, getStatusColor } from '../../utils/colors';
 
 export const data = new SlashCommandBuilder()
   .setName('setup')

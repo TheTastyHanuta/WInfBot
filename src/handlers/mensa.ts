@@ -110,7 +110,7 @@ async function saveMensaDataToDB(canteenName: 'insel' | 'sued'): Promise<void> {
       savedMeals.add(mealIdentifier);
     }
 
-    Logger.info(
+    Logger.debug(
       'Mensa Handler',
       `Mensa data for ${canteenName} (today: ${date}) successfully saved to database`
     );
@@ -138,7 +138,7 @@ async function createMensaEmbed(
     }).sort({ category: 1 });
 
     if (meals.length === 0) {
-      Logger.warn(
+      Logger.debug(
         'Mensa Handler Embed',
         `No meals found for ${canteenName} on ${today}.`
       );

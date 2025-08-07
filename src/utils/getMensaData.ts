@@ -5,21 +5,9 @@ import { parseStringPromise } from 'xml2js';
 import moment = require('moment-timezone');
 import { Logger } from './logger';
 
-interface MensaItem {
-  title: any;
-  preis1: any;
-  preis2: any;
-  preis3: any;
-  piktogramme?: any;
-}
-
 interface MensaDay {
   $: { timestamp: string };
   item: any;
-}
-
-interface MensaData {
-  day: MensaDay[];
 }
 
 interface MensaMeal {
@@ -29,8 +17,6 @@ interface MensaMeal {
   notes: string[];
   prices: string[];
 }
-
-const roles = ['student', 'employee', 'other'];
 
 /**
  * Determines food types based on pictogram codes

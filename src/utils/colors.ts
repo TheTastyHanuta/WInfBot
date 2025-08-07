@@ -33,29 +33,12 @@ export const Colors = {
   WELCOME: 0x57f287, // Green for welcome messages
   GOODBYE: 0xed4245, // Red for goodbye messages
   LEVELING: 0xfee75c, // Yellow for leveling system
-  MODERATION: 0xed4245, // Red for moderation
+  MODERATION: 0xed4245, // Red for moderation/deletions
   BIRTHDAY: 0xeb459e, // Pink for birthday messages
   INVITE: 0x5865f2, // Blue for invite tracking
   AUTO_ROLE: 0x99aab5, // Gray for auto role
 
-  // Special Colors
-  RAINBOW: [
-    0xff0000, // Red
-    0xff8000, // Orange
-    0xffff00, // Yellow
-    0x00ff00, // Green
-    0x0080ff, // Blue
-    0x8000ff, // Purple
-    0xff00ff, // Magenta
-  ],
 } as const;
-
-/**
- * Helper function to get a random color from the rainbow array
- */
-export function getRandomRainbowColor(): number {
-  return Colors.RAINBOW[Math.floor(Math.random() * Colors.RAINBOW.length)];
-}
 
 /**
  * Helper function to get status color based on boolean
@@ -81,37 +64,5 @@ export function getLogLevelColor(
       return Colors.SUCCESS;
     default:
       return Colors.INFO;
-  }
-}
-
-/**
- * Helper function to get feature-specific colors
- */
-export function getFeatureColor(feature: string): number {
-  switch (feature.toLowerCase()) {
-    case 'audit':
-    case 'auditlogging':
-      return Colors.AUDIT_LOG;
-    case 'welcome':
-    case 'welcomemessages':
-      return Colors.WELCOME;
-    case 'goodbye':
-    case 'goodbyemessages':
-      return Colors.GOODBYE;
-    case 'leveling':
-    case 'levelingsystem':
-      return Colors.LEVELING;
-    case 'moderation':
-      return Colors.MODERATION;
-    case 'birthday':
-    case 'birthdaymessages':
-      return Colors.BIRTHDAY;
-    case 'invite':
-    case 'invitetracking':
-      return Colors.INVITE;
-    case 'autorole':
-      return Colors.AUTO_ROLE;
-    default:
-      return Colors.PRIMARY;
   }
 }

@@ -37,7 +37,6 @@ export const Colors = {
   BIRTHDAY: 0xeb459e, // Pink for birthday messages
   INVITE: 0x5865f2, // Blue for invite tracking
   AUTO_ROLE: 0x99aab5, // Gray for auto role
-
 } as const;
 
 /**

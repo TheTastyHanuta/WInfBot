@@ -6,6 +6,31 @@ import {
 import { Logger } from '../../utils/logger';
 import { OpenAI } from 'openai';
 
+const AI_WELCOME_PROMPT = `
+Erstelle eine lustige und gemeine Willkommensnachricht für ein neues Discord-Server-Mitglied des Wirtschaftsinformatik Discord Servers, indem du wenn möglich den Namen des Mitglieds kreativ einbaust. Die Willkommensnachricht soll kreativ sein oder ein Wortspiel sein. Auch kannst du den Namen des Members roasten oder einen witzigen Bezug zum Namen herstellen. Achte auf einen frechen, humorvollen Ton, der auch sehr gemein sein darf. Nutze dabei verteilt Emojis, aber nicht zu viele.
+
+Wichtige Vorgaben:
+- Die Nachricht soll nicht zu lang sein aber mindestens zwei Sätze umfassen.
+- Die Nachricht soll auf Deutsch sein. Es dürfen englische Wörter verwendet werden, aber die Nachricht soll auf Deutsch sein.
+- Die Begrüßung soll am Anfang den Member per GENAUEN Namen begrüßen.
+- Gib NUR die fertige, vollständige Nachricht zurück; KEINE Begründung, KEIN JSON, KEINE Formatierung oder Zusatztexte.
+
+# Output Format
+Nur die fertige, ausformulierte Begrüßungsnachricht als Fließtext (keine Listen, kein JSON, keine zusätzlichen Erklärungen oder Metainformationen).
+
+# Beispiele
+
+Beispiel 1:
+Input-Name: thetastyhanuta
+
+Willkommen, thetastyhanuta🎉! Endlich jemand, der Cookies nicht nur im Browser akzeptiert, sondern sie in den Tech-Stack schichtet - brösel bitte nicht beim ersten JOIN. Hier zählen KPIs statt Kalorien und sauberes SQL statt Zuckerguss; im Data-Waferhouse knacken wir mit dir jede Hash-Nuss und deployen knusprigen Code.😜
+
+Beispiel 2:
+Input-Name: 11
+
+Es scheint, als hättest du deine Bewerbung für den Discord-Server des Studiengangs Wirtschaftsinformatik an der FAU Erlangen Nürnberg mit einer Zahl eingereicht, die mehr nach einer Hausnummer als nach einem Namen klingt!😊 Wenn 11 dein Geheimname ist, dann herzlich willkommen, du mysteriöse Ziffer! Bereite dich darauf vor, die spannendsten Konversationen über Wirtschaftsinformatik zu führen - vielleicht kannst du uns ja auch verraten, was 11 für dich bedeutet! 🎉
+`.trim();
+
 async function handleGuildMemberAdd(member: GuildMember, client: Client) {
   const guildId = member.guild.id;
   const guildName = member.guild.name;
@@ -38,15 +63,15 @@ async function handleGuildMemberAdd(member: GuildMember, client: Client) {
       if (welcomeMessage === 'USE_AI') {
         // Generate AI welcome message
         const openai = new OpenAI({ apiKey: process.env.OPEN_AI_API_KEY });
-        const response = await openai.chat.completions.create({
-          model: 'gpt-4o-mini',
-          messages: [
+        const response = await openai.responses.create({
+          model: 'gpt-5-nano',
+          input: [
             {
-              role: 'system',
+              role: 'developer',
               content: [
                 {
-                  type: 'text',
-                  text: 'Du bist ein Bot, der relativ kurze Beitrittsankündigungen für den Discord-Server des Studiengangs Wirtschaftsinformatik an der FAU Erlangen Nürnberg. Sie sollte lustig sein und darf die Person ärgern aber nicht erzwungen wirken. Versuche, den Namen der Person mit in die Nachricht ein zu beziehen. Nenne dabei den GENAUEN Namen mit der selben Schreibweise, wie dir gegeben wird!! Du darfst dich auch über die Person lustig machen und schwarzen Humor verwenden! Deine Antwort muss auf Deutsch sein!',
+                  type: 'input_text',
+                  text: AI_WELCOME_PROMPT,
                 },
               ],
             },
@@ -54,21 +79,26 @@ async function handleGuildMemberAdd(member: GuildMember, client: Client) {
               role: 'user',
               content: [
                 {
-                  type: 'text',
-                  text: `${member.user.username}`,
+                  type: 'input_text',
+                  text: `${userName}`,
                 },
               ],
             },
           ],
-          temperature: 0.8,
-          max_tokens: 130,
-          top_p: 1,
-          frequency_penalty: 0,
-          presence_penalty: 0,
+          text: {
+            format: {
+              type: 'text',
+            },
+            verbosity: 'high',
+          },
+          reasoning: {
+            effort: 'medium',
+          },
+          tools: [],
+          store: true,
         });
-        if (response.choices && response.choices.length > 0) {
-          let aiMessage = response.choices[0].message.content;
-
+        if (response) {
+          let aiMessage = response.output_text;
           if (
             aiMessage === null ||
             aiMessage?.length === 0 ||

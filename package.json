@@ -19,27 +19,27 @@
   "description": "",
   "dependencies": {
     "@types/node-cron": "^3.0.11",
-    "@types/node-fetch": "^2.6.12",
+    "@types/node-fetch": "^2.6.13",
     "@types/xml2js": "^0.4.14",
     "discord-arts": "^0.7.1",
     "discord.js": "^14.21.0",
-    "dotenv": "^17.2.0",
+    "dotenv": "^17.2.1",
     "moment": "^2.30.1",
     "moment-timezone": "^0.6.0",
-    "mongodb": "^6.17.0",
-    "mongoose": "^8.16.4",
+    "mongodb": "^6.18.0",
+    "mongoose": "^8.17.1",
     "node-cron": "^4.2.1",
     "node-fetch": "^2.7.0",
-    "openai": "^5.10.2",
+    "openai": "^5.12.2",
     "xml2js": "^0.6.2"
   },
   "devDependencies": {
     "@types/moment-timezone": "^0.5.13",
-    "@types/node": "^24.0.15",
+    "@types/node": "^24.3.0",
     "@types/prettier": "^2.7.3",
     "prettier": "^3.6.2",
     "tsup": "^8.0.0",
-    "tsx": "^4.20.3",
-    "typescript": "^5.0.0"
+    "tsx": "^4.20.4",
+    "typescript": "^5.9.2"
   }
 }

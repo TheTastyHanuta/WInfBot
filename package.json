@@ -1,6 +1,6 @@
 {
   "name": "winfbot",
-  "version": "1.2.6",
+  "version": "1.2.9",
   "main": "dist/index.js",
   "scripts": {
     "dev": "NODE_ENV=development tsx watch src/index.ts",

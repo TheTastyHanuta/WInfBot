@@ -63,6 +63,9 @@ client.once('ready', async () => {
   const environment = isDevelopment ? 'DEVELOPMENT' : 'PRODUCTION';
   Logger.system(`${client.user?.tag} is online! (${environment})`);
 
+  // Set Discord client for error reporting
+  Logger.setDiscordClient(client);
+
   // Connect to MongoDB
   try {
     if (!mongoUri) {

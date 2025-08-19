@@ -1,4 +1,6 @@
 import moment = require('moment-timezone');
+import { Client, EmbedBuilder, TextChannel } from 'discord.js';
+import { Colors } from './colors';
 
 /**
  * Centralized logging utility for the Discord bot
@@ -17,6 +19,11 @@ export class Logger {
   private static logLevel = Logger.isDevelopment
     ? LogLevel.DEBUG
     : LogLevel.INFO;
+
+  // Discord client for error reporting
+  private static discordClient: Client | null = null;
+  private static errorChannelId = '965416088747798529';
+  private static errorGuildId = '855096349593436171';
 
   // Default timezone - can be configured via environment variable
   private static timezone = process.env.LOG_TIMEZONE || 'Europe/Berlin';
@@ -37,6 +44,86 @@ export class Logger {
   }
 
   /**
+   * Set Discord client for error reporting
+   */
+  static setDiscordClient(client: Client): void {
+    Logger.discordClient = client;
+    Logger.info('LOGGER', 'Discord client set for error reporting');
+  }
+
+  /**
+   * Send error embed to Discord channel
+   */
+  private static async sendErrorToDiscord(
+    category: string,
+    message: string,
+    error?: Error
+  ): Promise<void> {
+    if (!Logger.discordClient) {
+      console.warn(`[LOGGER] Discord client not set for logging`);
+      return;
+    }
+
+    try {
+      const guild = Logger.discordClient.guilds.cache.get(Logger.errorGuildId);
+      if (!guild) {
+        console.warn(`[LOGGER] Guild with ID ${Logger.errorGuildId} not found`);
+        return;
+      }
+
+      const channel = guild.channels.cache.get(
+        Logger.errorChannelId
+      ) as TextChannel;
+      if (!channel) {
+        console.warn(
+          `[LOGGER] Channel with ID ${Logger.errorChannelId} not found`
+        );
+        return;
+      }
+
+      const timestamp = moment()
+        .tz(Logger.timezone)
+        .format('YYYY-MM-DD HH:mm:ss z');
+
+      const embed = new EmbedBuilder()
+        .setTitle('🚨 Bot Error')
+        .setColor(Colors.ERROR)
+        .addFields(
+          { name: 'Category', value: category, inline: true },
+          { name: 'Timestamp', value: timestamp, inline: true },
+          {
+            name: 'Environment',
+            value: Logger.isDevelopment ? 'Development' : 'Production',
+            inline: true,
+          },
+          {
+            name: 'Message',
+            value:
+              message.length > 1024
+                ? message.substring(0, 1021) + '...'
+                : message,
+          }
+        )
+        .setTimestamp();
+
+      if (error) {
+        const stackTrace = error.stack || error.toString();
+        embed.addFields({
+          name: 'Stack Trace',
+          value:
+            stackTrace.length > 1024
+              ? stackTrace.substring(0, 1021) + '...'
+              : stackTrace,
+        });
+      }
+
+      await channel.send({ embeds: [embed] });
+    } catch (discordError) {
+      console.error('[LOGGER] Failed to send error to Discord:', discordError);
+    }
+  }
+
+  /**
    * Log error messages (always shown)
    */
   static error(category: string, message: string, error?: Error): void {
@@ -46,6 +133,11 @@ export class Logger {
         console.error(error.stack);
       }
     }
+
+    // Send error to Discord channel
+    Logger.sendErrorToDiscord(category, message, error).catch(discordError => {
+      console.error('[LOGGER] Failed to send error to Discord:', discordError);
+    });
   }
 
   /**

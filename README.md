@@ -5,12 +5,14 @@ A Discord bot designed for the Wirtschaftsinformatik Discord Server at FAU Erlan
 ## 🚀 Features
 
 ### 📊 Statistics & Ranking System
+
 - **Activity Tracking**: Monitors user activity across text and voice channels
 - **Leveling System**: XP-based progression with customizable level-up messages
 - **Leaderboards**: Server and member activity rankings with detailed statistics
 - **Personal Ranks**: Individual user rank cards with beautiful profile displays
 
 ### 🔍 Audit Logging
+
 - **Message Tracking**: Logs message edits, deletions with full context
 - **Moderation Events**: Tracks bans, kicks, and other moderation actions
 - **Channel Management**: Logs channel creation, deletion, and updates
@@ -18,18 +20,21 @@ A Discord bot designed for the Wirtschaftsinformatik Discord Server at FAU Erlan
 - **Event Logging**: Comprehensive audit trail for server events
 
 ### 👋 Member Management
+
 - **Welcome Messages**: Customizable greetings for new members (including AI-generated messages)
 - **Goodbye Messages**: Farewell messages when members leave (not yet implemented)
 - **Auto Role**: Automatic role assignment for new members
 - **Invite Tracking**: Monitor who brings new members to your server (not yet implemented)
 
 ### ⚙️ Easy Configuration
+
 - **Interactive Setup**: Step-by-step configuration wizard with `/setup` command
 - **Settings Overview**: Quick overview of all bot settings with `/settings-overview`
 - **Granular Control**: Enable/disable specific modules per server
 - **Permission Management**: Role-based access control for administrative commands
 
 ### 🍽️ Additional Features
+
 - **Mensa Integration**: Automated cafeteria menu updates (FAU-specific)
 - **Birthday Messages**: Celebrate member birthdays (not yet implemented)
 - **User Tracking**: Detailed analytics for server engagement
@@ -46,18 +51,21 @@ A Discord bot designed for the Wirtschaftsinformatik Discord Server at FAU Erlan
 ## 📦 Installation
 
 1. **Clone the repository**
+
    ```bash
    git clone https://github.com/TheTastyHanuta/WInfBot.git
    cd WInfBot
    ```
 
 2. **Install dependencies**
+
    ```bash
    npm install
    ```
 
 3. **Environment Configuration**
    Create a `.env` file with the following variables:
+
    ```env
    # Bot Tokens
    BOT_TOKEN=your_production_bot_token
@@ -77,17 +85,20 @@ A Discord bot designed for the Wirtschaftsinformatik Discord Server at FAU Erlan
    ```
 
 4. **Build the project**
+
    ```bash
    npm run build
    ```
 
 5. **Deploy commands**
+
    ```bash
    npm run deploy:prod  # For production
    npm run deploy:dev   # For development
    ```
 
 6. **Start the bot**
+
    ```bash
    npm run start:prod   # For production
    npm run start:dev    # For development

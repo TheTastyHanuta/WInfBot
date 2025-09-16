@@ -1,17 +1,17 @@
-# WInfBot 🤖
+# WInfBot
 
 A Discord bot designed for the Wirtschaftsinformatik Discord Server at FAU Erlangen-Nürnberg. This bot provides a complete suite of server management, user engagement, and moderation tools.
 
-## 🚀 Features
+## Features
 
-### 📊 Statistics & Ranking System
+### Statistics & Ranking System
 
 - **Activity Tracking**: Monitors user activity across text and voice channels
 - **Leveling System**: XP-based progression with customizable level-up messages
 - **Leaderboards**: Server and member activity rankings with detailed statistics
 - **Personal Ranks**: Individual user rank cards with beautiful profile displays
 
-### 🔍 Audit Logging
+### Audit Logging
 
 - **Message Tracking**: Logs message edits, deletions with full context
 - **Moderation Events**: Tracks bans, kicks, and other moderation actions
@@ -19,27 +19,27 @@ A Discord bot designed for the Wirtschaftsinformatik Discord Server at FAU Erlan
 - **Role Monitoring**: Tracks role changes and permission updates
 - **Event Logging**: Comprehensive audit trail for server events
 
-### 👋 Member Management
+### Member Management
 
 - **Welcome Messages**: Customizable greetings for new members (including AI-generated messages)
 - **Goodbye Messages**: Farewell messages when members leave (not yet implemented)
 - **Auto Role**: Automatic role assignment for new members
 - **Invite Tracking**: Monitor who brings new members to your server (not yet implemented)
 
-### ⚙️ Easy Configuration
+### Easy Configuration
 
 - **Interactive Setup**: Step-by-step configuration wizard with `/setup` command
 - **Settings Overview**: Quick overview of all bot settings with `/settings-overview`
 - **Granular Control**: Enable/disable specific modules per server
 - **Permission Management**: Role-based access control for administrative commands
 
-### 🍽️ Additional Features
+### Additional Features
 
 - **Mensa Integration**: Automated cafeteria menu updates (FAU-specific)
 - **Birthday Messages**: Celebrate member birthdays (not yet implemented)
 - **User Tracking**: Detailed analytics for server engagement
 
-## 🛠️ Technology Stack
+## Technology Stack
 
 - **Runtime**: Node.js with TypeScript
 - **Framework**: Discord.js v14
@@ -48,7 +48,7 @@ A Discord bot designed for the Wirtschaftsinformatik Discord Server at FAU Erlan
 - **Development**: tsx for hot reloading
 - **Formatting**: Prettier for code consistency
 
-## 📦 Installation
+## Installation
 
 1. **Clone the repository**
 
@@ -104,7 +104,7 @@ A Discord bot designed for the Wirtschaftsinformatik Discord Server at FAU Erlan
    npm run start:dev    # For development
    ```
 
-## 🔧 Development
+## Development
 
 ### Available Scripts
 
@@ -136,7 +136,7 @@ src/
 └── scripts/           # Migration and utility scripts
 ```
 
-## 🎯 Quick Start Guide
+## Quick Start Guide
 
 1. **Invite the bot** to your server with Administrator permissions
 2. **Run `/setup`** to configure the bot using the interactive wizard
@@ -148,7 +148,7 @@ src/
 4. **Use `/settings-overview`** to review your configuration
 5. **Explore statistics** with `/rank` and `/activity-leaderboard`
 
-## 📋 Key Commands
+## Key Commands
 
 - `/setup` - Interactive bot configuration wizard
 - `/settings-overview` - View current bot settings
@@ -158,11 +158,11 @@ src/
 - `/goodbye-message` - Configure goodbye messages
 - `/ping` - Check bot responsiveness
 
-## 🤝 Contributing
+## Contributing
 
 This bot is specifically designed for the FAU Wirtschaftsinformatik community. While contributions are welcome, please ensure they align with the project's educational and community focus.
 
-## 📄 License
+## License
 
 CC0 License - see license file for details
 

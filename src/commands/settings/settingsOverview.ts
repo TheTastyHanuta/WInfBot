@@ -11,10 +11,13 @@ import {
 } from '../../models/settings/settings';
 import { Logger } from '../../utils/logger';
 import { Colors } from '../../utils/colors';
+import config from '../../../config.json'; 
+
+const botName = config.botName;
 
 export const data = new SlashCommandBuilder()
   .setName('settings-overview')
-  .setDescription('Shows an overview of all bot settings for this server')
+  .setDescription(`Shows an overview of all bot settings for this server - ${botName}`)
   .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild);
 
 export async function execute(interaction: CommandInteraction) {
@@ -52,7 +55,7 @@ function createSettingsOverviewEmbed(
     .setColor(Colors.PRIMARY)
     .setTimestamp()
     .setFooter({
-      text: `Requested by ${interaction.user.tag}`,
+      text: `Requested by ${interaction.user.tag} | ${botName}`,
       iconURL: interaction.user.displayAvatarURL(),
     });
 

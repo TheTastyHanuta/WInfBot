@@ -7,7 +7,8 @@ import { Logger } from '../../utils/logger';
 import { OpenAI } from 'openai';
 
 const AI_WELCOME_PROMPT = `
-Erstelle eine lustige und gemeine Willkommensnachricht für ein neues Discord-Server-Mitglied des Wirtschaftsinformatik Discord Servers, indem du wenn möglich den Namen des Mitglieds kreativ einbaust. Die Willkommensnachricht soll kreativ sein oder ein Wortspiel sein. Auch kannst du den Namen des Members roasten oder einen witzigen Bezug zum Namen herstellen. Achte auf einen frechen, humorvollen Ton, der auch sehr gemein sein darf. Nutze dabei verteilt Emojis, aber nicht zu viele.
+Erstelle eine lustige und gemeine Willkommensnachricht für ein neues Discord-Server-Mitglied des Wirtschaftsinformatik Discord Servers, indem du wenn möglich den Namen des Mitglieds kreativ einbaust. 
+Die Willkommensnachricht soll kreativ oder ein Wortspiel sein. Auch kannst du dich über den Namen des Members lustig machen oder einen witzigen Bezug zum Namen herstellen. Achte auf einen frechen, humorvollen Ton, der auch sehr gemein sein darf. Nutze dabei verteilt Emojis, aber nicht zu viele.
 
 Wichtige Vorgaben:
 - Die Nachricht soll nicht zu lang sein aber mindestens zwei Sätze umfassen.
@@ -23,12 +24,12 @@ Nur die fertige, ausformulierte Begrüßungsnachricht als Fließtext (keine List
 Beispiel 1:
 Input-Name: thetastyhanuta
 
-Willkommen, thetastyhanuta🎉! Endlich jemand, der Cookies nicht nur im Browser akzeptiert, sondern sie in den Tech-Stack schichtet - brösel bitte nicht beim ersten JOIN. Hier zählen KPIs statt Kalorien und sauberes SQL statt Zuckerguss; im Data-Waferhouse knacken wir mit dir jede Hash-Nuss und deployen knusprigen Code.😜
+Nachricht: Willkommen, thetastyhanuta🎉! Endlich jemand, der Cookies nicht nur im Browser akzeptiert, sondern sie in den Tech-Stack schichtet - brösel bitte nicht beim ersten JOIN. Hier zählen KPIs statt Kalorien und sauberes SQL statt Zuckerguss; im Data-Waferhouse knacken wir mit dir jede Hash-Nuss und deployen knusprigen Code.😜
 
 Beispiel 2:
 Input-Name: 11
 
-Es scheint, als hättest du deine Bewerbung für den Discord-Server des Studiengangs Wirtschaftsinformatik an der FAU Erlangen Nürnberg mit einer Zahl eingereicht, die mehr nach einer Hausnummer als nach einem Namen klingt!😊 Wenn 11 dein Geheimname ist, dann herzlich willkommen, du mysteriöse Ziffer! Bereite dich darauf vor, die spannendsten Konversationen über Wirtschaftsinformatik zu führen - vielleicht kannst du uns ja auch verraten, was 11 für dich bedeutet! 🎉
+Nachricht: Es scheint, als hättest du deine Bewerbung für den Discord-Server des Studiengangs Wirtschaftsinformatik an der FAU Erlangen Nürnberg mit einer Zahl eingereicht, die mehr nach einer Hausnummer als nach einem Namen klingt!😊 Wenn 11 dein Geheimname ist, dann herzlich willkommen, du mysteriöse Ziffer! Bereite dich darauf vor, die spannendsten Konversationen über Wirtschaftsinformatik zu führen - vielleicht kannst du uns ja auch verraten, was 11 für dich bedeutet! 🎉
 `.trim();
 
 async function handleGuildMemberAdd(member: GuildMember, client: Client) {

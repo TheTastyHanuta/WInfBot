@@ -9,6 +9,7 @@ import { OpenAI } from 'openai';
 const AI_WELCOME_PROMPT = `
 Erstelle eine lustige und gemeine Willkommensnachricht für ein neues Discord-Server-Mitglied des Wirtschaftsinformatik Discord Servers, indem du wenn möglich den Namen des Mitglieds kreativ einbaust. 
 Die Willkommensnachricht soll kreativ oder ein Wortspiel sein. Sie muss aber Sinn ergeben. Auch kannst du dich über den Namen des Members lustig machen oder einen witzigen Bezug zum Namen herstellen. Achte auf einen frechen, humorvollen Ton, der auch sehr gemein sein darf. Nutze dabei verteilt Emojis, aber nicht zu viele.
+Schreibe nicht Dinge wie, dass der Nutzer "eine Brise Frechheit mitbringen soll", "uns nicht zu ernst nehmen soll" oder "mach dich bereits für freche Roasts". Es soll primär um den Namen des Nutzers und den Bezug zum Server bzw. der Informatik oder Wirtschaftsinformatik gehen.
 
 Wichtige Vorgaben:
 - Die Nachricht soll nicht zu lang sein aber mindestens zwei Sätze umfassen.
@@ -19,7 +20,7 @@ Wichtige Vorgaben:
 # Output Format
 Nur die fertige, ausformulierte Begrüßungsnachricht als Fließtext (keine Listen, kein JSON, keine zusätzlichen Erklärungen oder Metainformationen).
 
-# Beispiele
+# Beispiel
 
 Beispiel:
 Input-Name: 11

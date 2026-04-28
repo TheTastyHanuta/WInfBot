@@ -5,195 +5,394 @@ import { parseStringPromise } from 'xml2js';
 import moment = require('moment-timezone');
 import { Logger } from './logger';
 
+const MENSA_TIMEZONE = 'Europe/Berlin';
+
 interface MensaDay {
-  $: { timestamp: string };
-  item: any;
+  $?: { timestamp?: string };
+  item?: unknown;
 }
 
-interface MensaMeal {
+export interface MensaPrices {
+  student: number | null;
+  employee: number | null;
+  other: number | null;
+}
+
+export interface MensaNutrition {
+  kj: number | null;
+  kcal: number | null;
+  fat: number | null;
+  saturatedFat: number | null;
+  carbohydrates: number | null;
+  sugar: number | null;
+  fiber: number | null;
+  protein: number | null;
+  salt: number | null;
+}
+
+export interface MensaMeal {
   date: string;
-  category: string;
   name: string;
-  notes: string[];
-  prices: string[];
+  allergens: string[];
+  additives: string[];
+  foodTypes: string[];
+  sideDishes: string[];
+  prices: MensaPrices;
+  nutrition: MensaNutrition;
 }
 
-/**
- * Determines food types based on pictogram codes
- */
-function getFoodTypes(piktogramme?: string): string {
-  if (!piktogramme) {
-    return 'Sonstiges';
+const ADDITIVE_LABELS: Record<string, string> = {
+  '1': 'mit Farbstoffen',
+  '2': 'mit Coffein',
+  '4': 'mit Konservierungsstoff',
+  '5': 'mit Süßungsmittel',
+  '7': 'mit Antioxidationsmittel',
+  '8': 'mit Geschmacksverstärker',
+  '9': 'geschwefelt',
+  '10': 'geschwärzt',
+  '11': 'gewachst',
+  '12': 'mit Phosphat',
+  '13': 'mit einer Phenylalaninquelle',
+  '30': 'mit Fettglasur',
+};
+
+const ALLERGEN_LABELS: Record<string, string> = {
+  a1: 'mit Gluten',
+  a2: 'mit Krebstiere',
+  a3: 'mit Eier',
+  a4: 'mit Fisch',
+  a5: 'mit Erdnüsse',
+  a6: 'mit Soja',
+  a7: 'mit Milch/Laktose',
+  a8: 'mit Schalenfrüchte',
+  a9: 'mit Sellerie',
+  a10: 'mit Senf',
+  a11: 'mit Sesam',
+  a12: 'mit Schwefeldioxid/Sulfite',
+  a13: 'mit Lupinen',
+  a14: 'mit Weichtiere',
+  Wz: 'mit Weizen',
+  Ro: 'mit Roggen',
+  Ge: 'mit Gerste',
+  Hf: 'mit Hafer',
+  Kr: 'mit Krebstiere',
+  Ei: 'mit Eier',
+  Fi: 'mit Fisch',
+  Er: 'mit Erdnüsse',
+  So: 'mit Soja',
+  Mi: 'mit Milch/Laktose',
+  Man: 'mit Mandeln',
+  Hs: 'mit Haselnüsse',
+  Wa: 'mit Walnüsse',
+  Ka: 'mit Cashewnüsse',
+  Pe: 'mit Pekannüsse',
+  Pa: 'mit Paranüsse',
+  Pi: 'mit Pistazien',
+  Mac: 'mit Macadamianüsse',
+  Sel: 'mit Sellerie',
+  Sen: 'mit Senf',
+  Ses: 'mit Sesam',
+  Su: 'mit Schwefeldioxid/Sulfite',
+  Lu: 'mit Lupinen',
+  We: 'mit Weichtiere',
+};
+
+const DIET_TAG_LABELS: Record<string, string> = {
+  Veg: 'ist vegetarisch',
+  veg: 'ist vegan',
+  V: 'ist vegetarisch',
+  Gf: 'glutenfrei',
+  GF: 'glutenfrei',
+  R: 'mit Rind',
+  S: 'mit Schwein',
+  G: 'mit Geflügel',
+  L: 'mit Lamm',
+  W: 'mit Wild',
+  F: 'mit Fisch',
+  A: 'mit Alkohol',
+  B: 'Bio',
+  MV: 'MensaVital',
+  CO2: 'CO2 neutral',
+  MSC: 'MSC Fisch',
+};
+
+const FOOD_TYPE_BY_ICON: Record<string, string> = {
+  R: 'Rind',
+  S: 'Schwein',
+  G: 'Geflügel',
+  V: 'Vegetarisch',
+  F: 'Fisch',
+  L: 'Lamm',
+  W: 'Wild',
+  veg: 'Vegan',
+  MSC: 'MSC Fisch',
+  CO2: 'CO2 neutral',
+  Gf: 'Glutenfrei',
+  A: 'Alkohol',
+  B: 'Bio',
+  MV: 'MensaVital',
+};
+
+const RECOGNIZED_TAGS = new Set([
+  ...Object.keys(ADDITIVE_LABELS),
+  ...Object.keys(ALLERGEN_LABELS),
+  ...Object.keys(DIET_TAG_LABELS),
+]);
+
+function unique(values: string[]): string[] {
+  return [...new Set(values.filter(Boolean))];
+}
+
+export function normalizeWhitespace(value: string): string {
+  return value.replace(/\s+/g, ' ').trim();
+}
+
+function firstXmlValue(value: unknown): unknown {
+  if (Array.isArray(value)) return value[0];
+  return value;
+}
+
+export function getXmlString(
+  item: Record<string, unknown>,
+  key: string
+): string {
+  const rawValue = firstXmlValue(item[key]);
+
+  if (rawValue === null || rawValue === undefined) return '';
+
+  if (typeof rawValue === 'string') return normalizeWhitespace(rawValue);
+
+  if (typeof rawValue === 'number') return String(rawValue);
+
+  if (typeof rawValue === 'object' && '_' in rawValue) {
+    return normalizeWhitespace(String((rawValue as { _: unknown })._));
   }
 
-  let foodTypes = '';
-
-  if (piktogramme.includes('R.png')) foodTypes += 'Rind ';
-  if (piktogramme.includes('S.png')) foodTypes += 'Schwein ';
-  if (piktogramme.includes('G.png')) foodTypes += 'Geflügel ';
-  if (piktogramme.includes('V.png')) foodTypes += 'Vegetarisch ';
-  if (piktogramme.includes('F.png')) foodTypes += 'Fisch ';
-  if (piktogramme.includes('L.png')) foodTypes += 'Lamm ';
-  if (piktogramme.includes('W.png')) foodTypes += 'Wild ';
-  if (piktogramme.includes('veg.png')) foodTypes += 'Vegan ';
-  if (piktogramme.includes('MSC.png')) foodTypes += 'MSC Fisch ';
-  if (piktogramme.includes('CO2.png')) foodTypes += 'CO2 neutral ';
-
-  return foodTypes.trim() || 'Sonstiges';
+  return normalizeWhitespace(String(rawValue));
 }
 
-/**
- * Extracts reference codes from title using regex
- */
-function getRefs(title: string): string[] {
-  if (!title || typeof title !== 'string') return [];
+export function parseDecimal(value: string): number | null {
+  const normalized = value.trim().replace(',', '.');
+  if (!normalized || normalized === '-') return null;
 
-  const refsRegex = /(\([ ,a-zA-Z0-9]*\))/g;
-  const splitRefsRegex = /[\(,]([ a-zA-Z0-9]*)/g;
+  const parsed = Number.parseFloat(normalized);
+  return Number.isFinite(parsed) ? parsed : null;
+}
 
-  const rawRefs = title.match(refsRegex) || [];
-  const refs: string[] = [];
+export function parsePrices(item: Record<string, unknown>): MensaPrices {
+  return {
+    student: parseDecimal(getXmlString(item, 'preis1')),
+    employee: parseDecimal(getXmlString(item, 'preis2')),
+    other: parseDecimal(getXmlString(item, 'preis3')),
+  };
+}
 
-  rawRefs.forEach(ref => {
-    const matches = ref.matchAll(splitRefsRegex);
-    for (const match of matches) {
-      if (match[1].trim()) {
-        refs.push(match[1].trim());
-      }
+export function parseNutrition(item: Record<string, unknown>): MensaNutrition {
+  return {
+    kj: parseDecimal(getXmlString(item, 'kj')),
+    kcal: parseDecimal(getXmlString(item, 'kcal')),
+    fat: parseDecimal(getXmlString(item, 'fett')),
+    saturatedFat: parseDecimal(getXmlString(item, 'gesfett')),
+    carbohydrates: parseDecimal(getXmlString(item, 'kh')),
+    sugar: parseDecimal(getXmlString(item, 'zucker')),
+    fiber: parseDecimal(getXmlString(item, 'ballaststoffe')),
+    protein: parseDecimal(getXmlString(item, 'eiweiss')),
+    salt: parseDecimal(getXmlString(item, 'salz')),
+  };
+}
+
+function normalizeTag(tag: string): string {
+  const trimmed = tag.trim();
+
+  switch (trimmed) {
+    case 'VEG':
+      return 'Veg';
+    case 'GF':
+      return 'Gf';
+    case 'Fi':
+      return 'Fi';
+    default:
+      return trimmed;
+  }
+}
+
+function parseTagGroup(content: string): string[] {
+  return content
+    .split(',')
+    .flatMap(tag => tag.split('.'))
+    .map(normalizeTag)
+    .filter(Boolean);
+}
+
+export function extractRecognizedTagGroups(title: string): string[][] {
+  const groups: string[][] = [];
+  const parenthesisRegex = /\(([^()]*)\)/g;
+
+  for (const match of title.matchAll(parenthesisRegex)) {
+    const tags = parseTagGroup(match[1]);
+
+    if (tags.length > 0 && tags.every(tag => RECOGNIZED_TAGS.has(tag))) {
+      groups.push(tags);
     }
-  });
+  }
 
-  return refs;
+  return groups;
 }
 
-/**
- * Builds notes array based on reference codes in title
- */
-function buildNotesString(title: string): string[] {
-  if (!title || typeof title !== 'string') return [];
+export function cleanMealName(title: string): string {
+  const parenthesisRegex = /\(([^()]*)\)/g;
 
-  const foodIs: string[] = [];
-  const foodContains: string[] = [];
-  const refs = getRefs(title);
+  return normalizeWhitespace(
+    title.replace(parenthesisRegex, (fullMatch, content: string) => {
+      const tags = parseTagGroup(content);
 
-  refs.forEach(r => {
-    // Parse food characteristics
-    switch (r) {
-      case '1':
-        foodIs.push('mit Farbstoffen');
-        break;
-      case '2':
-        foodIs.push('mit Coffein');
-        break;
-      case '4':
-        foodIs.push('mit Konservierungsstoff');
-        break;
-      case '5':
-        foodIs.push('mit Süßungsmittel');
-        break;
-      case '7':
-        foodIs.push('mit Antioxidationsmittel');
-        break;
-      case '8':
-        foodIs.push('mit Geschmacksverstärker');
-        break;
-      case '9':
-        foodIs.push('geschwefelt');
-        break;
-      case '10':
-        foodIs.push('geschwärzt');
-        break;
-      case '11':
-        foodIs.push('gewachst');
-        break;
-      case '12':
-        foodIs.push('mit Phosphat');
-        break;
-      case '13':
-        foodIs.push('mit einer Phenylalaninquelle');
-        break;
-      case '30':
-        foodIs.push('mit Fettglasur');
-        break;
-      case 'Veg':
-      case ' Veg':
-        foodIs.push('ist vegetarisch');
-        break;
+      return tags.length > 0 && tags.every(tag => RECOGNIZED_TAGS.has(tag))
+        ? ''
+        : fullMatch;
+    })
+  );
+}
 
-      // Parse allergen information
-      case 'a1':
-        foodContains.push('mit Gluten');
-        break;
-      case 'a2':
-      case 'G':
-        foodContains.push('mit Krebstiere');
-        break;
-      case 'a3':
-      case 'Ei':
-        foodContains.push('mit Eier');
-        break;
-      case 'a4':
-        foodContains.push('mit Fisch');
-        break;
-      case 'a5':
-        foodContains.push('mit Erdnüsse');
-        break;
-      case 'a6':
-      case 'So':
-        foodContains.push('mit Soja');
-        break;
-      case 'a7':
-      case 'Mi':
-        foodContains.push('mit Milch/Laktose');
-        break;
-      case 'a8':
-        foodContains.push('mit Schalenfrüchte');
-        break;
-      case 'a9':
-      case 'Sel':
-        foodContains.push('mit Sellerie');
-        break;
-      case 'a10':
-      case 'Sen':
-        foodContains.push('mit Senf');
-        break;
-      case 'a11':
-      case 'Ses':
-        foodContains.push('mit Sesam');
-        break;
-      case 'a12':
-      case 'Su':
-        foodContains.push('mit Schwefeldioxid/Sulfite');
-        break;
-      case 'a13':
-        foodContains.push('mit Lupinen');
-        break;
-      case 'a14':
-        foodContains.push('mit Weichtiere');
-        break;
-      case 'Wz':
-        foodContains.push('mit Weizen');
-        break;
-      case 'Man':
-        foodContains.push('mit Mandeln');
-        break;
-      default:
-        foodContains.push(`mit undefinierter Chemikalie ${r}`);
-        break;
+export function extractTags(title: string): string[] {
+  return unique(extractRecognizedTagGroups(title).flat());
+}
+
+export function buildNotes(title: string): {
+  allergens: string[];
+  additives: string[];
+} {
+  const allergens: string[] = [];
+  const additives: string[] = [];
+
+  for (const tag of extractTags(title)) {
+    if (ADDITIVE_LABELS[tag]) additives.push(ADDITIVE_LABELS[tag]);
+    if (ALLERGEN_LABELS[tag]) allergens.push(ALLERGEN_LABELS[tag]);
+  }
+
+  return {
+    allergens: unique(allergens),
+    additives: unique(additives),
+  };
+}
+
+export function extractFoodTypes(piktogramme: string): string[] {
+  const iconRegex = /\/([A-Za-z0-9]+)\.png(?:\?|['"&\s>])/g;
+  const foodTypes: string[] = [];
+
+  for (const match of piktogramme.matchAll(iconRegex)) {
+    const iconCode = match[1];
+    const foodType = FOOD_TYPE_BY_ICON[iconCode];
+    if (foodType) foodTypes.push(foodType);
+  }
+
+  return unique(foodTypes);
+}
+
+export function parseSideDishes(beilagen: string): string[] {
+  const cleaned = cleanMealName(beilagen).replace(/^Optional:\s*/i, '');
+
+  if (!cleaned) return [];
+
+  return unique(
+    cleaned
+      .split(',')
+      .map(sideDish => normalizeWhitespace(sideDish))
+      .filter(Boolean)
+  );
+}
+
+function hasNutrition(meal: MensaMeal): boolean {
+  return Object.values(meal.nutrition).some(value => value !== null);
+}
+
+function mealCompletenessScore(meal: MensaMeal): number {
+  return [
+    ...Object.values(meal.nutrition),
+    ...Object.values(meal.prices),
+    ...meal.foodTypes,
+    ...meal.allergens,
+    ...meal.additives,
+    ...meal.sideDishes,
+  ].filter(value => value !== null && value !== '').length;
+}
+
+function normalizeIdentifierValue(value: string): string {
+  return normalizeWhitespace(value).toLocaleLowerCase('de-DE');
+}
+
+export function deduplicateMeals(meals: MensaMeal[]): MensaMeal[] {
+  const byIdentifier = new Map<string, MensaMeal>();
+
+  for (const meal of meals) {
+    const identifier = [meal.date, normalizeIdentifierValue(meal.name)].join(
+      '|'
+    );
+    const existingMeal = byIdentifier.get(identifier);
+
+    if (!existingMeal) {
+      byIdentifier.set(identifier, meal);
+      continue;
     }
-  });
 
-  return [...foodIs, ...foodContains];
+    const preferNewMeal =
+      !hasNutrition(existingMeal) ||
+      mealCompletenessScore(meal) > mealCompletenessScore(existingMeal);
+
+    if (preferNewMeal) byIdentifier.set(identifier, meal);
+
+    Logger.warn(
+      'getMensaData',
+      `Duplicate skipped: ${meal.name} on ${meal.date}`
+    );
+  }
+
+  return [...byIdentifier.values()];
 }
 
-/**
- * Removes reference codes from title to get clean description
- */
-function getDescription(title: string): string {
-  if (!title || typeof title !== 'string') return '';
+export async function parseMensaXml(
+  xmlData: string,
+  _sourceUrl?: string
+): Promise<MensaMeal[]> {
+  const parsedData = await parseStringPromise(xmlData);
+  const meals: MensaMeal[] = [];
+  const days = parsedData?.speiseplan?.tag || [];
 
-  const removeRefsRegex = /\([ ,a-zA-Z0-9]*\)/g;
-  return title.replace(removeRefsRegex, '').trim();
+  for (const day of Array.isArray(days) ? days : [days]) {
+    const mensaDay = day as MensaDay;
+    const timestamp = Number.parseInt(String(mensaDay.$?.timestamp || ''), 10);
+    if (!Number.isFinite(timestamp)) continue;
+
+    const date = moment.unix(timestamp).tz(MENSA_TIMEZONE).format('YYYY-MM-DD');
+    const items = Array.isArray(mensaDay.item)
+      ? mensaDay.item
+      : [mensaDay.item];
+
+    for (const rawItem of items) {
+      if (!rawItem || typeof rawItem !== 'object') continue;
+
+      const item = rawItem as Record<string, unknown>;
+      const rawTitle = getXmlString(item, 'title');
+      if (!rawTitle) continue;
+
+      const piktogramme = getXmlString(item, 'piktogramme');
+      const foodTypes = extractFoodTypes(piktogramme);
+      const { allergens, additives } = buildNotes(rawTitle);
+      const name = cleanMealName(rawTitle);
+
+      meals.push({
+        date,
+        name,
+        allergens,
+        additives,
+        foodTypes,
+        sideDishes: parseSideDishes(getXmlString(item, 'beilagen')),
+        prices: parsePrices(item),
+        nutrition: parseNutrition(item),
+      });
+    }
+  }
+
+  return deduplicateMeals(meals);
 }
 
 /**
@@ -207,75 +406,8 @@ export async function getMensaData(url: string): Promise<MensaMeal[]> {
     }
 
     const xmlData = await response.text();
-    const parsedData = await parseStringPromise(xmlData);
+    const meals = await parseMensaXml(xmlData, url);
 
-    const meals: MensaMeal[] = [];
-
-    // Navigate through the XML structure
-    const days = parsedData?.speiseplan?.tag || [];
-
-    days.forEach((day: MensaDay) => {
-      const timestamp = parseInt(day.$.timestamp);
-      const date = moment
-        .unix(timestamp)
-        .tz('Europe/Brussels')
-        .format('YYYY-MM-DD');
-
-      const items = Array.isArray(day.item) ? day.item : [day.item];
-
-      items.forEach((item: any) => {
-        if (!item || !item.title) return;
-
-        // Handle potential array format from xml2js
-        let title = item.title;
-        if (Array.isArray(title)) {
-          title = title[0];
-        }
-        if (typeof title === 'object' && title._) {
-          title = title._;
-        }
-        if (typeof title !== 'string') {
-          title = String(title);
-        }
-
-        const description = getDescription(title);
-        const notes = buildNotesString(title);
-
-        // Handle prices the same way
-        let preis1 = item.preis1;
-        let preis2 = item.preis2;
-        let preis3 = item.preis3;
-
-        if (Array.isArray(preis1)) preis1 = preis1[0];
-        if (Array.isArray(preis2)) preis2 = preis2[0];
-        if (Array.isArray(preis3)) preis3 = preis3[0];
-
-        const prices = [
-          String(preis1 || ''),
-          String(preis2 || ''),
-          String(preis3 || ''),
-        ];
-
-        // Handle piktogramme
-        let piktogramme = item.piktogramme;
-        if (Array.isArray(piktogramme)) {
-          piktogramme = piktogramme[0];
-        }
-        if (typeof piktogramme === 'object' && piktogramme._) {
-          piktogramme = piktogramme._;
-        }
-
-        const foodType = getFoodTypes(piktogramme);
-
-        meals.push({
-          date,
-          category: foodType,
-          name: description,
-          notes,
-          prices,
-        });
-      });
-    });
     Logger.debug('getMensaData', `Fetched ${meals.length} meals from ${url}`);
     return meals;
   } catch (error) {

@@ -1,11 +1,18 @@
-import { Message, EmbedBuilder, TextChannel, AuditLogEvent } from 'discord.js';
+import {
+  Message,
+  PartialMessage,
+  EmbedBuilder,
+  TextChannel,
+  PermissionFlagsBits,
+} from 'discord.js';
 import { GuildSettings } from '../../models/settings/settings';
 import { Logger } from '../../utils/logger';
 import { Colors } from '../../utils/colors';
+import { matchSingleMessageDeleteAuditLog } from '../../utils/messageDeleteAudit';
 
-async function handleMessageDelete(message: Message) {
-  // Ignore bot messages and system messages
-  if (!message.author || message.author.bot) return;
+async function handleMessageDelete(message: Message | PartialMessage) {
+  // Ignore bot messages when author data is available
+  if (message.author?.bot) return;
 
   // Ignore messages not in guilds
   if (!message.guild) return;
@@ -66,7 +73,7 @@ async function handleMessageDelete(message: Message) {
     if (
       !auditChannel
         .permissionsFor(message.guild.members.me!)
-        ?.has('SendMessages')
+        ?.has(PermissionFlagsBits.SendMessages)
     ) {
       Logger.warn(
         'MESSAGE_DELETE',
@@ -75,32 +82,32 @@ async function handleMessageDelete(message: Message) {
       return;
     }
 
+    const author = message.author ?? null;
+    const authorName = author?.displayName ?? 'Unknown Author';
+    const authorTag = author?.tag ?? 'Unknown User';
+    const authorId = author?.id ?? null;
+    const isPartialDelete = message.partial || !author;
+
     // Try to find who deleted the message from audit logs
     let deletedBy = null;
-    let deletionReason = 'Unknown';
+    let deletionReason: string | null = null;
 
     try {
       // Check if bot has permission to view audit logs
-      if (message.guild.members.me?.permissions.has('ViewAuditLog')) {
-        const auditLogs = await message.guild.fetchAuditLogs({
-          type: AuditLogEvent.MessageDelete,
-          limit: 10,
-        });
+      if (
+        message.guild.members.me?.permissions.has(
+          PermissionFlagsBits.ViewAuditLog
+        )
+      ) {
+        const auditMatch = await matchSingleMessageDeleteAuditLog(
+          message.guild,
+          message.channel.id,
+          authorId
+        );
 
-        // Find the audit log entry for this message deletion
-        const auditEntry = auditLogs.entries.find(entry => {
-          // Check if the audit log entry is recent (within last 5 seconds)
-          const timeDiff = Date.now() - entry.createdTimestamp;
-          return (
-            timeDiff < 5000 &&
-            entry.target?.id === message.author.id &&
-            entry.extra?.channel?.id === message.channel.id
-          );
-        });
-
-        if (auditEntry) {
-          deletedBy = auditEntry.executor;
-          deletionReason = auditEntry.reason || 'No reason provided';
+        if (auditMatch) {
+          deletedBy = auditMatch.executor;
+          deletionReason = auditMatch.reason;
         }
       }
     } catch (error) {
@@ -120,10 +127,6 @@ async function handleMessageDelete(message: Message) {
     const embed = new EmbedBuilder()
       .setTitle('🗑️ Message Deleted')
       .setColor(Colors.MODERATION)
-      .setAuthor({
-        name: `${message.author.displayName} (${message.author.tag})`,
-        iconURL: message.author.displayAvatarURL(),
-      })
       .addFields(
         {
           name: '📍 Channel',
@@ -142,6 +145,17 @@ async function handleMessageDelete(message: Message) {
         }
       );
 
+    if (author) {
+      embed.setAuthor({
+        name: `${authorName} (${authorTag})`,
+        iconURL: author.displayAvatarURL(),
+      });
+    } else {
+      embed.setAuthor({
+        name: 'Unknown Author',
+      });
+    }
+
     // Add who deleted the message
     if (deletedBy) {
       embed.addFields({
@@ -150,7 +164,7 @@ async function handleMessageDelete(message: Message) {
         inline: true,
       });
 
-      if (deletionReason !== 'No reason provided') {
+      if (deletionReason) {
         embed.addFields({
           name: '📝 Reason',
           value: deletionReason,
@@ -160,8 +174,19 @@ async function handleMessageDelete(message: Message) {
     } else {
       embed.addFields({
         name: '👤 Deleted By',
-        value: `<@${message.author.id}>`,
+        value: authorId
+          ? 'No matching audit log entry. This is usually a self-delete or an unavailable audit-log record.'
+          : 'Unknown',
         inline: true,
+      });
+    }
+
+    if (isPartialDelete) {
+      embed.addFields({
+        name: '⚠️ Metadata',
+        value:
+          'Author or content details were not fully available because Discord only sent a partial delete event for an uncached message.',
+        inline: false,
       });
     }
 
@@ -175,7 +200,9 @@ async function handleMessageDelete(message: Message) {
     } else {
       embed.addFields({
         name: '📄 Message Content',
-        value: '*No text content (possibly media only)*',
+        value: isPartialDelete
+          ? '*No text content available (message was likely uncached when deleted)*'
+          : '*No text content (possibly media only)*',
         inline: false,
       });
     }
@@ -272,7 +299,7 @@ async function handleMessageDelete(message: Message) {
 
     embed
       .setFooter({
-        text: `User ID: ${message.author.id} | Message ID: ${message.id}`,
+        text: `User ID: ${authorId ?? 'Unknown'} | Message ID: ${message.id}`,
       })
       .setTimestamp();
 
@@ -281,7 +308,7 @@ async function handleMessageDelete(message: Message) {
 
     Logger.debug(
       'MESSAGE_DELETE',
-      `Message deletion logged for user ${message.author.tag} in guild ${message.guild.name}`
+      `Message deletion logged for user ${authorTag} in guild ${message.guild.name}`
     );
   } catch (error) {
     Logger.error(

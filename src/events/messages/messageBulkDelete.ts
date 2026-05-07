@@ -3,12 +3,13 @@ import {
   Message,
   EmbedBuilder,
   TextChannel,
-  AuditLogEvent,
   PartialMessage,
+  PermissionFlagsBits,
 } from 'discord.js';
 import { GuildSettings } from '../../models/settings/settings';
 import { Logger } from '../../utils/logger';
 import { Colors } from '../../utils/colors';
+import { matchBulkMessageDeleteAuditLog } from '../../utils/messageDeleteAudit';
 
 async function handleMessageBulkDelete(
   messages: Collection<string, Message | PartialMessage>
@@ -72,7 +73,11 @@ async function handleMessageBulkDelete(
     }
 
     // Check if bot has permission to send messages in audit channel
-    if (!auditChannel.permissionsFor(guild.members.me!)?.has('SendMessages')) {
+    if (
+      !auditChannel
+        .permissionsFor(guild.members.me!)
+        ?.has(PermissionFlagsBits.SendMessages)
+    ) {
       Logger.warn(
         'MESSAGE_BULK_DELETE',
         `No permission to send messages in audit channel for guild ${guild.name}`
@@ -80,28 +85,24 @@ async function handleMessageBulkDelete(
       return;
     }
 
+    // Get channel information
+    const channel = firstMessage.channel as TextChannel;
+
     // Try to find who deleted the messages from audit logs
     let deletedBy = null;
-    let deletionReason = 'Unknown';
+    let deletionReason: string | null = null;
 
     try {
       // Check if bot has permission to view audit logs
-      if (guild.members.me?.permissions.has('ViewAuditLog')) {
-        const auditLogs = await guild.fetchAuditLogs({
-          type: AuditLogEvent.MessageBulkDelete,
-          limit: 5,
-        });
+      if (guild.members.me?.permissions.has(PermissionFlagsBits.ViewAuditLog)) {
+        const auditMatch = await matchBulkMessageDeleteAuditLog(
+          guild,
+          messages.size
+        );
 
-        // Find the audit log entry for this bulk deletion
-        const auditEntry = auditLogs.entries.find(entry => {
-          // Check if the audit log entry is recent (within last 10 seconds)
-          const timeDiff = Date.now() - entry.createdTimestamp;
-          return timeDiff < 10000 && entry.extra?.count === messages.size;
-        });
-
-        if (auditEntry) {
-          deletedBy = auditEntry.executor;
-          deletionReason = auditEntry.reason || 'No reason provided';
+        if (auditMatch) {
+          deletedBy = auditMatch.executor;
+          deletionReason = auditMatch.reason;
         }
       }
     } catch (error) {
@@ -111,11 +112,9 @@ async function handleMessageBulkDelete(
       );
     }
 
-    // Get channel information
-    const channel = firstMessage.channel as TextChannel;
-
     // Filter out bot messages and partial messages for statistics
     const userMessages = messages.filter(msg => msg.author && !msg.author.bot);
+    const partialMessages = messages.filter(msg => msg.partial || !msg.author);
     const messagesByUser = new Map<string, number>();
     let totalAttachments = 0;
     let totalEmbeds = 0;
@@ -172,7 +171,7 @@ async function handleMessageBulkDelete(
         inline: true,
       });
 
-      if (deletionReason !== 'No reason provided') {
+      if (deletionReason) {
         embed.addFields({
           name: '📝 Reason',
           value: deletionReason,
@@ -182,7 +181,8 @@ async function handleMessageBulkDelete(
     } else {
       embed.addFields({
         name: '👤 Deleted By',
-        value: 'Unknown (possibly bot or system)',
+        value:
+          'No matching audit log entry. This can happen if the deletion was not recorded yet or Discord did not expose enough audit-log context.',
         inline: true,
       });
     }
@@ -202,6 +202,23 @@ async function handleMessageBulkDelete(
         name: '📄 Content Summary',
         value: contentInfo,
         inline: true,
+      });
+    }
+
+    if (partialMessages.size > 0) {
+      embed.addFields({
+        name: '⚠️ Metadata',
+        value: `${partialMessages.size} deleted message(s) were only available as partial data, so author/content details may be incomplete.`,
+        inline: false,
+      });
+    }
+
+    if (!deletedBy) {
+      embed.addFields({
+        name: 'ℹ️ Audit Log Note',
+        value:
+          'Discord bulk-delete audit logs expose the deleted count, but not enough message-level context to guarantee an exact match.',
+        inline: false,
       });
     }
 

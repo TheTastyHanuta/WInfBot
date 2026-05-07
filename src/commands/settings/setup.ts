@@ -24,13 +24,15 @@ import {
 } from '../../models/settings/settings';
 import { Logger } from '../../utils/logger';
 import { Colors, getStatusColor } from '../../utils/colors';
-import config from '../../../config.json'; 
+import config from '../../../config.json';
 
 const botName = config.botName;
 
 export const data = new SlashCommandBuilder()
   .setName('setup')
-  .setDescription(`Interactive setup of all bot settings for this server - ${botName}`)
+  .setDescription(
+    `Interactive setup of all bot settings for this server - ${botName}`
+  )
   .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild);
 
 interface SetupSession {

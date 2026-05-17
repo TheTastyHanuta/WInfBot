@@ -30,6 +30,7 @@ declare module 'discord.js' {
 }
 
 const client = new Client({
+  enforceNonce: true,
   intents: [
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMessages,

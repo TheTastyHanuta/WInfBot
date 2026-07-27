@@ -10,6 +10,13 @@ async function handleMessageUpdate(oldMessage: Message, newMessage: Message) {
   // Ignore messages not in guilds
   if (!newMessage.guild) return;
 
+  // Discord re-emits messageUpdate when it refreshes link embeds / attachment
+  // URLs. Those payloads carry edited_timestamp: null, so this is the only
+  // reliable signal that a user actually edited the message. Without it an
+  // uncached (partial) oldMessage also defeats the content check below, since
+  // its content is null rather than the real previous text.
+  if (!newMessage.editedTimestamp) return;
+
   // Ignore if content hasn't changed (e.g., just embed updates)
   if (oldMessage.content === newMessage.content) return;
 
@@ -107,7 +114,7 @@ async function handleMessageUpdate(oldMessage: Message, newMessage: Message) {
         },
         {
           name: '⏰ Edited At',
-          value: `<t:${Math.floor(newMessage.editedTimestamp! / 1000)}:F>`,
+          value: `<t:${Math.floor(newMessage.editedTimestamp / 1000)}:F>`,
           inline: true,
         }
       )
@@ -117,7 +124,13 @@ async function handleMessageUpdate(oldMessage: Message, newMessage: Message) {
       .setTimestamp();
 
     // Add old content if it exists
-    if (oldMessage.content && oldMessage.content.trim()) {
+    if (oldMessage.partial) {
+      embed.addFields({
+        name: '📄 Original Content',
+        value: '*Unknown — message was not cached*',
+        inline: false,
+      });
+    } else if (oldMessage.content && oldMessage.content.trim()) {
       embed.addFields({
         name: '📄 Original Content',
         value: `\`\`\`${truncateText(oldMessage.content)}\`\`\``,

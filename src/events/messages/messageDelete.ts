@@ -9,6 +9,7 @@ import { GuildSettings } from '../../models/settings/settings';
 import { Logger } from '../../utils/logger';
 import { Colors } from '../../utils/colors';
 import { matchSingleMessageDeleteAuditLog } from '../../utils/messageDeleteAudit';
+import { codeBlock, truncateText } from '../../utils/embedText';
 
 async function handleMessageDelete(message: Message | PartialMessage) {
   // Ignore bot messages when author data is available
@@ -117,12 +118,6 @@ async function handleMessageDelete(message: Message | PartialMessage) {
       );
     }
 
-    // Truncate content if too long for embed
-    const truncateText = (text: string, maxLength: number = 1024): string => {
-      if (text.length <= maxLength) return text;
-      return text.substring(0, maxLength - 3) + '...';
-    };
-
     // Create embed
     const embed = new EmbedBuilder()
       .setTitle('🗑️ Message Deleted')
@@ -194,7 +189,7 @@ async function handleMessageDelete(message: Message | PartialMessage) {
     if (message.content && message.content.trim()) {
       embed.addFields({
         name: '📄 Message Content',
-        value: `\`\`\`${truncateText(message.content)}\`\`\``,
+        value: codeBlock(message.content),
         inline: false,
       });
     } else {

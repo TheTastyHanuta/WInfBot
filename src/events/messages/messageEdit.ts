@@ -2,6 +2,7 @@ import { Message, EmbedBuilder, TextChannel } from 'discord.js';
 import { GuildSettings } from '../../models/settings/settings';
 import { Logger } from '../../utils/logger';
 import { Colors } from '../../utils/colors';
+import { codeBlock } from '../../utils/embedText';
 
 async function handleMessageUpdate(oldMessage: Message, newMessage: Message) {
   // Ignore bot messages and system messages
@@ -87,12 +88,6 @@ async function handleMessageUpdate(oldMessage: Message, newMessage: Message) {
       return;
     }
 
-    // Truncate content if too long for embed
-    const truncateText = (text: string, maxLength: number = 1024): string => {
-      if (text.length <= maxLength) return text;
-      return text.substring(0, maxLength - 3) + '...';
-    };
-
     // Create embed
     const embed = new EmbedBuilder()
       .setTitle('📝 Message Edited')
@@ -133,7 +128,7 @@ async function handleMessageUpdate(oldMessage: Message, newMessage: Message) {
     } else if (oldMessage.content && oldMessage.content.trim()) {
       embed.addFields({
         name: '📄 Original Content',
-        value: `\`\`\`${truncateText(oldMessage.content)}\`\`\``,
+        value: codeBlock(oldMessage.content),
         inline: false,
       });
     }
@@ -142,7 +137,7 @@ async function handleMessageUpdate(oldMessage: Message, newMessage: Message) {
     if (newMessage.content && newMessage.content.trim()) {
       embed.addFields({
         name: '📝 New Content',
-        value: `\`\`\`${truncateText(newMessage.content)}\`\`\``,
+        value: codeBlock(newMessage.content),
         inline: false,
       });
     }

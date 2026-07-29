@@ -11,7 +11,7 @@ import {
 } from '../../models/settings/settings';
 import { Logger } from '../../utils/logger';
 import { Colors } from '../../utils/colors';
-import config from '../../../config.json';
+import config from '../../utils/config';
 
 const botName = config.botName;
 

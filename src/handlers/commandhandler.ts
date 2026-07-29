@@ -6,20 +6,17 @@ import { Logger } from '../utils/logger';
 export function setupCommandHandler(client: Client) {
   // Load all commands
   const loadCommands = () => {
-    // Determine the correct path based on whether running from dist or src
-    const isProduction = __filename.includes('dist');
-    const commandsPath = isProduction
-      ? join(__dirname, 'commands') // Use relative path for production (compiled)
-      : join(__dirname, '../commands'); // Use __dirname for development
+    // This file lives at <root>/handlers both when running from src via tsx
+    // and when running the compiled output from dist, so the commands are one
+    // level up in either case.
+    const commandsPath = join(__dirname, '../commands');
 
     const commandFolders = readdirSync(commandsPath);
 
     for (const folder of commandFolders) {
       const folderPath = join(commandsPath, folder);
-      const commandFiles = readdirSync(folderPath).filter(file =>
-        isProduction
-          ? file.endsWith('.js')
-          : file.endsWith('.js') || file.endsWith('.ts')
+      const commandFiles = readdirSync(folderPath).filter(
+        file => file.endsWith('.js') || file.endsWith('.ts')
       );
 
       for (const file of commandFiles) {

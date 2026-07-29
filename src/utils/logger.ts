@@ -20,13 +20,24 @@ export class Logger {
     ? LogLevel.DEBUG
     : LogLevel.INFO;
 
-  // Discord client for error reporting
+  // Discord client for error reporting. Both bots report to the same
+  // guild/channel, configured via ERROR_GUILD_ID and ERROR_CHANNEL_ID
   private static discordClient: Client | null = null;
-  private static errorChannelId = '965416088747798529';
-  private static errorGuildId = '855096349593436171';
+  private static missingConfigWarned = false;
 
-  // Default timezone - can be configured via environment variable
-  private static timezone = process.env.LOG_TIMEZONE || 'Europe/Berlin';
+  // The same error is only reported to Discord once per this window
+  private static readonly ERROR_DEDUPE_MS = 60_000;
+  private static lastSentByKey = new Map<string, number>();
+
+  // Default timezone - from the environment, or from setTimezone at runtime
+  // (which wins). Lazy for the same reason as the error target above
+  private static timezoneOverride: string | null = null;
+
+  private static get timezone(): string {
+    return (
+      Logger.timezoneOverride || process.env.LOG_TIMEZONE || 'Europe/Berlin'
+    );
+  }
 
   private static formatMessage(
     level: string,
@@ -52,6 +63,32 @@ export class Logger {
   }
 
   /**
+   * Drop repeats of the same error within ERROR_DEDUPE_MS.
+   */
+  private static shouldReportToDiscord(
+    category: string,
+    message: string
+  ): boolean {
+    const now = Date.now();
+    const key = `${category}:${message}`;
+
+    const lastSent = Logger.lastSentByKey.get(key);
+    if (lastSent !== undefined && now - lastSent < Logger.ERROR_DEDUPE_MS) {
+      return false;
+    }
+
+    // Expire stale entries so the map cannot grow without bound.
+    for (const [entryKey, timestamp] of Logger.lastSentByKey.entries()) {
+      if (now - timestamp >= Logger.ERROR_DEDUPE_MS) {
+        Logger.lastSentByKey.delete(entryKey);
+      }
+    }
+
+    Logger.lastSentByKey.set(key, now);
+    return true;
+  }
+
+  /**
    * Send error embed to Discord channel
    */
   private static async sendErrorToDiscord(
@@ -64,19 +101,36 @@ export class Logger {
       return;
     }
 
+    const guildId = process.env.ERROR_GUILD_ID;
+    const channelId = process.env.ERROR_CHANNEL_ID;
+    if (!guildId || !channelId) {
+      if (!Logger.missingConfigWarned) {
+        Logger.missingConfigWarned = true;
+        console.warn(
+          '[LOGGER] ERROR_GUILD_ID and/or ERROR_CHANNEL_ID are not set — ' +
+            'error reporting to Discord is disabled (console logging is unaffected)'
+        );
+      }
+      return;
+    }
+
+    if (!Logger.shouldReportToDiscord(category, message)) {
+      return;
+    }
+
     try {
-      const guild = Logger.discordClient.guilds.cache.get(Logger.errorGuildId);
+      const guild = Logger.discordClient.guilds.cache.get(guildId);
       if (!guild) {
-        console.warn(`[LOGGER] Guild with ID ${Logger.errorGuildId} not found`);
+        console.warn(
+          `[LOGGER] Error guild ${guildId} not found — is this bot a member of it?`
+        );
         return;
       }
 
-      const channel = guild.channels.cache.get(
-        Logger.errorChannelId
-      ) as TextChannel;
+      const channel = guild.channels.cache.get(channelId) as TextChannel;
       if (!channel) {
         console.warn(
-          `[LOGGER] Channel with ID ${Logger.errorChannelId} not found`
+          `[LOGGER] Error channel ${channelId} not found in guild ${guildId}`
         );
         return;
       }
@@ -202,7 +256,7 @@ export class Logger {
   static setTimezone(timezone: string): void {
     // Validate timezone
     if (moment.tz.zone(timezone)) {
-      Logger.timezone = timezone;
+      Logger.timezoneOverride = timezone;
       Logger.info('LOGGER', `Timezone set to: ${timezone}`);
     } else {
       Logger.warn(

@@ -4,11 +4,10 @@ import { join } from 'path';
 import { Logger } from '../utils/logger';
 
 export function setupEventHandler(client: Client) {
-  // Determine the correct path based on whether running from dist or src
-  const isProduction = __filename.includes('dist');
-  const eventsPath = isProduction
-    ? join(__dirname, 'events') // Use relative path for production (compiled)
-    : join(__dirname, '../events'); // Use __dirname for development
+  // This file lives at <root>/handlers both when running from src via tsx and
+  // when running the compiled output from dist, so the events are one level up
+  // in either case.
+  const eventsPath = join(__dirname, '../events');
 
   // Recursively load events from all subdirectories
   const loadEventsFromDirectory = (directory: string) => {
@@ -22,11 +21,7 @@ export function setupEventHandler(client: Client) {
         // Recursively load from subdirectories
         loadEventsFromDirectory(fullPath);
       } else {
-        // Check file extension based on environment
-        const isProduction = __filename.includes('dist');
-        const isValidFile = isProduction
-          ? item.endsWith('.js')
-          : item.endsWith('.js') || item.endsWith('.ts');
+        const isValidFile = item.endsWith('.js') || item.endsWith('.ts');
 
         if (isValidFile) {
           // Load event file

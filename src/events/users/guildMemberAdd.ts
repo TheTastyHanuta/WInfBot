@@ -5,28 +5,7 @@ import {
 } from '../../models/settings/settings';
 import { Logger } from '../../utils/logger';
 import { OpenAI } from 'openai';
-
-const AI_WELCOME_PROMPT = `
-Erstelle eine lustige und gemeine Willkommensnachricht für ein neues Discord-Server-Mitglied des Wirtschaftsinformatik Discord Servers, indem du wenn möglich den Namen des Mitglieds kreativ einbaust. 
-Die Willkommensnachricht soll kreativ oder ein Wortspiel sein. Sie muss aber Sinn ergeben. Auch kannst du dich über den Namen des Members lustig machen oder einen witzigen Bezug zum Namen herstellen. Achte auf einen frechen, humorvollen Ton, der auch sehr gemein sein darf. Nutze dabei verteilt Emojis, aber nicht zu viele.
-Schreibe nicht Dinge wie, dass der Nutzer "eine Brise Frechheit mitbringen soll", "uns nicht zu ernst nehmen soll" oder "mach dich bereits für freche Roasts". Es soll primär um den Namen des Nutzers und den Bezug zum Server bzw. der Informatik oder Wirtschaftsinformatik gehen.
-
-Wichtige Vorgaben:
-- Die Nachricht soll nicht zu lang sein aber mindestens zwei Sätze umfassen.
-- Die Nachricht soll auf Deutsch sein. Es dürfen englische Wörter verwendet werden, aber die Nachricht soll auf Deutsch sein.
-- Die Begrüßung soll am Anfang den Member per GENAUEN Namen begrüßen.
-- Gib NUR die fertige, vollständige Nachricht zurück; KEINE Begründung, KEIN JSON, KEINE Formatierung oder Zusatztexte.
-
-# Output Format
-Nur die fertige, ausformulierte Begrüßungsnachricht als Fließtext (keine Listen, kein JSON, keine zusätzlichen Erklärungen oder Metainformationen).
-
-# Beispiel
-
-Beispiel:
-Input-Name: 11
-
-Nachricht: Es scheint, als hättest du deine Bewerbung für den Discord-Server des Studiengangs Wirtschaftsinformatik an der FAU Erlangen Nürnberg mit einer Zahl eingereicht, die mehr nach einer Hausnummer als nach einem Namen klingt!😊 Wenn 11 dein Geheimname ist, dann herzlich willkommen, du mysteriöse Ziffer! 🎉
-`.trim();
+import config from '../../utils/config';
 
 async function handleGuildMemberAdd(member: GuildMember, client: Client) {
   const guildId = member.guild.id;
@@ -68,7 +47,7 @@ async function handleGuildMemberAdd(member: GuildMember, client: Client) {
               content: [
                 {
                   type: 'input_text',
-                  text: AI_WELCOME_PROMPT,
+                  text: config.aiWelcomePrompt,
                 },
               ],
             },

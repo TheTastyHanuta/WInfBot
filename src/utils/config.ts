@@ -11,6 +11,7 @@ import { join } from 'path';
 
 interface Config {
   botName: string;
+  aiWelcomePrompt: string;
 }
 
 // dist/utils/config.js -> repo root

@@ -73,7 +73,7 @@ A Discord bot designed for the Wirtschaftsinformatik Discord Server at FAU Erlan
 
    # Client IDs
    CLIENT_ID=your_production_client_id
-   TEST_CLIENT_ID=your_development_client_id
+   TEST_BOT_CLIENT_ID=your_development_client_id
 
    # Database
    MONGO_DB_URI=your_mongodb_uri
@@ -123,7 +123,6 @@ A Discord bot designed for the Wirtschaftsinformatik Discord Server at FAU Erlan
 - `npm run deploy:dev` - Deploy commands to development environment
 - `npm run deploy:prod` - Deploy commands to production environment
 - `npm run format` - Format code with Prettier
-- `npm run migrate` - Run database migration scripts
 
 ### Project Structure
 
@@ -142,8 +141,7 @@ src/
 │   └── users/         # User events (join, leave)
 ├── handlers/          # Command and event loaders
 ├── models/            # Database schemas
-├── utils/             # Utility functions
-└── scripts/           # Migration and utility scripts
+└── utils/             # Utility functions
 ```
 
 ## Quick Start Guide

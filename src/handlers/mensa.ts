@@ -57,51 +57,6 @@ function getLegacyBerlinDateFromDayString(day: string): Date {
   return moment.tz(day, 'YYYY-MM-DD', MENSA_TIMEZONE).startOf('day').toDate();
 }
 
-function normalizeMealIdentifier(value: string): string {
-  return value.replace(/\s+/g, ' ').trim().toLocaleLowerCase('de-DE');
-}
-
-function getCompletenessScore(meal: MensaMeal): number {
-  return [
-    ...Object.values(meal.prices),
-    ...Object.values(meal.nutrition),
-    ...meal.foodTypes,
-    ...meal.sideDishes,
-    ...meal.allergens,
-    ...meal.additives,
-  ].filter(value => value !== null && value !== '').length;
-}
-
-function deduplicateMealsForDb(
-  canteenName: CanteenName,
-  meals: MensaMeal[]
-): MensaMeal[] {
-  const mealsByIdentifier = new Map<string, MensaMeal>();
-
-  for (const meal of meals) {
-    const identifier = [meal.date, normalizeMealIdentifier(meal.name)].join(
-      '|'
-    );
-    const existingMeal = mealsByIdentifier.get(identifier);
-
-    if (!existingMeal) {
-      mealsByIdentifier.set(identifier, meal);
-      continue;
-    }
-
-    if (getCompletenessScore(meal) > getCompletenessScore(existingMeal)) {
-      mealsByIdentifier.set(identifier, meal);
-    }
-
-    Logger.warn(
-      'Mensa Handler',
-      `Duplicate skipped: ${meal.name} for ${canteenName}`
-    );
-  }
-
-  return [...mealsByIdentifier.values()];
-}
-
 function formatPrice(price: number | null | undefined): string {
   return price !== null && price !== undefined && price > 0
     ? `${price.toFixed(2)}€`
@@ -153,11 +108,10 @@ async function saveMensaDataToDB(canteenName: 'insel' | 'sued'): Promise<void> {
       `Fetching data for ${canteenName} for today: ${today}`
     );
 
+    // getMensaData already deduplicates what it parses, so this only selects
+    // today's meals.
     const meals = await canteenConfig.fetchMeals();
-    const todayMeals = deduplicateMealsForDb(
-      canteenName,
-      meals.filter(meal => meal.date === today)
-    );
+    const todayMeals = meals.filter(meal => meal.date === today);
 
     if (todayMeals.length === 0) {
       Logger.warn(
@@ -295,7 +249,7 @@ export default function initializeMensaCron(client: Client): void {
   let cronSchedule: string;
   // Use different cron schedule for development and production
   if (process.env.NODE_ENV === 'development') {
-    cronSchedule = '38 15 * * *'; // Run at 14:22 in development
+    cronSchedule = '38 15 * * *'; // Run at 15:38 in development
   } else {
     cronSchedule = '30 9 * * *'; // Run at 09:30 in production
   }

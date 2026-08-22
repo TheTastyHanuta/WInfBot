@@ -1,8 +1,5 @@
 import { Client, GuildMember } from 'discord.js';
-import {
-  GuildSettings,
-  IGuildSettingsDocument,
-} from '../../models/settings/settings';
+import { GuildSettings } from '../../models/settings/settings';
 import { Logger } from '../../utils/logger';
 import { delay } from '../../utils/delay';
 

@@ -40,19 +40,6 @@ export interface IMemberStats extends Document {
    * @returns The current rank (position) of this member in the guild
    */
   getRankInGuild(): Promise<number>;
-
-  /**
-   * Increments the message count and the count for a specific text channel.
-   * @param channelId The ID of the text channel where the message was sent.
-   */
-  incrementTextChannel(channelId: string): void;
-
-  /**
-   * Adds voice time for a specific channel.
-   * @param channelId The ID of the voice channel.
-   * @param timeInSeconds The amount of time in seconds to add.
-   */
-  addVoiceTime(channelId: string, timeInSeconds: number): void;
 }
 
 // Interface for static methods
@@ -103,6 +90,35 @@ export interface IMemberStatsModel extends Model<IMemberStats> {
     userId: string,
     updates?: Partial<IMemberStats>
   ): Promise<IMemberStats>;
+
+  /**
+   * Atomically count one message for a member, both in the total and for the
+   * channel it was sent in. Atomic because several handlers write to the same
+   * document for the same message.
+   * @param guildId The ID of the guild
+   * @param userId The ID of the user
+   * @param channelId The ID of the text channel the message was sent in
+   */
+  recordTextMessage(
+    guildId: string,
+    userId: string,
+    channelId: string
+  ): Promise<void>;
+
+  /**
+   * Atomically add voice time for a member, both in the total and for the
+   * channel it was spent in.
+   * @param guildId The ID of the guild
+   * @param userId The ID of the user
+   * @param channelId The ID of the voice channel
+   * @param timeInSeconds The amount of time in seconds to add
+   */
+  recordVoiceTime(
+    guildId: string,
+    userId: string,
+    channelId: string,
+    timeInSeconds: number
+  ): Promise<void>;
 }
 
 const memberStatsSchema = new Schema<IMemberStats>(
@@ -201,6 +217,36 @@ memberStatsSchema.statics.createOrUpdate = function (
   );
 };
 
+memberStatsSchema.statics.recordTextMessage = async function (
+  guildId: string,
+  userId: string,
+  channelId: string
+) {
+  await this.updateOne(
+    { guildId, userId },
+    { $inc: { messages: 1, [`textChannels.${channelId}`]: 1 } },
+    { upsert: true }
+  );
+};
+
+memberStatsSchema.statics.recordVoiceTime = async function (
+  guildId: string,
+  userId: string,
+  channelId: string,
+  timeInSeconds: number
+) {
+  await this.updateOne(
+    { guildId, userId },
+    {
+      $inc: {
+        voiceTime: timeInSeconds,
+        [`voiceChannels.${channelId}`]: timeInSeconds,
+      },
+    },
+    { upsert: true }
+  );
+};
+
 memberStatsSchema.methods.addXP = function (amount: number) {
   this.xp += amount;
 
@@ -232,21 +278,6 @@ memberStatsSchema.methods.getXPUntilNextLevel = function (): number {
 memberStatsSchema.methods.getLevelProgress = function (): number {
   const nextLevelXPRequired = this.getXPRequiredForLevel(this.level + 1);
   return Math.min(this.xp / nextLevelXPRequired, 1);
-};
-
-memberStatsSchema.methods.incrementTextChannel = function (channelId: string) {
-  const currentCount = this.textChannels.get(channelId) || 0;
-  this.textChannels.set(channelId, currentCount + 1);
-  this.messages += 1;
-};
-
-memberStatsSchema.methods.addVoiceTime = function (
-  channelId: string,
-  timeInSeconds: number
-) {
-  const currentTime = this.voiceChannels.get(channelId) || 0;
-  this.voiceChannels.set(channelId, currentTime + timeInSeconds);
-  this.voiceTime += timeInSeconds;
 };
 
 // Calculate the current rank (position) of this member in the guild

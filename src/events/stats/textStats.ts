@@ -1,4 +1,4 @@
-import { Message, Client } from 'discord.js';
+import { Message } from 'discord.js';
 import { MemberStats } from '../../models/stats/memberStats';
 import { ServerStats } from '../../models/stats/serverStats';
 import { GuildSettings } from '../../models/settings/settings';
@@ -20,19 +20,11 @@ async function handleTextStatsOnMessage(message: Message) {
   if (!serverSettings.getSetting('userTracking')?.enabled) return;
 
   try {
-    // Update Member Stats for text channel
-    let memberStats = await MemberStats.createOrUpdate(guildId, userId);
-
-    // Increment text channel stats for the member
-    memberStats.incrementTextChannel(channelId);
-    await memberStats.save();
-
-    // Update Server Stats for text channel
-    let serverStats = await ServerStats.createOrUpdate(guildId, {});
-
-    // Increment text channel stats for the server
-    serverStats.incrementTextChannel(channelId);
-    await serverStats.save();
+    // Count the message for the member and for the server. Both writes are
+    // atomic, so bursts of messages (and the leveling handler writing to the
+    // same member document) cannot overwrite each other's counters.
+    await MemberStats.recordTextMessage(guildId, userId, channelId);
+    await ServerStats.recordTextMessage(guildId, channelId);
   } catch (error) {
     Logger.error(
       'TEXT_STATS',

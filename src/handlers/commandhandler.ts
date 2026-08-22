@@ -1,4 +1,4 @@
-import { Client } from 'discord.js';
+import { Client, InteractionReplyOptions, MessageFlags } from 'discord.js';
 import { readdirSync } from 'fs';
 import { join } from 'path';
 import { Logger } from '../utils/logger';
@@ -57,15 +57,25 @@ export function setupCommandHandler(client: Client) {
         error as Error
       );
 
-      const errorMessage = {
+      const errorMessage: InteractionReplyOptions = {
         content: 'There was an error executing this command!',
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       };
 
-      if (interaction.replied || interaction.deferred) {
-        await interaction.followUp(errorMessage);
-      } else {
-        await interaction.reply(errorMessage);
+      // Replying can fail on its own (expired or already-acknowledged
+      // interaction). That must not escalate into an unhandled rejection.
+      try {
+        if (interaction.replied || interaction.deferred) {
+          await interaction.followUp(errorMessage);
+        } else {
+          await interaction.reply(errorMessage);
+        }
+      } catch (replyError) {
+        Logger.error(
+          'COMMAND_HANDLER',
+          `Could not report the error for command ${interaction.commandName}`,
+          replyError as Error
+        );
       }
     }
   });

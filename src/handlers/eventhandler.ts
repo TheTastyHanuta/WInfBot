@@ -28,14 +28,33 @@ export function setupEventHandler(client: Client) {
           const event = require(fullPath);
 
           if (event.name && event.execute) {
+            // Event handlers are async and their promise is not awaited by
+            // discord.js, so anything they throw outside their own try/catch
+            // would become an unhandled rejection and take the process down.
+            const run = (...args: unknown[]) => {
+              try {
+                Promise.resolve(event.execute(...args, client)).catch(
+                  (error: unknown) => {
+                    Logger.error(
+                      'EVENT_HANDLER',
+                      `Unhandled error in event ${event.name} (${item})`,
+                      error as Error
+                    );
+                  }
+                );
+              } catch (error) {
+                Logger.error(
+                  'EVENT_HANDLER',
+                  `Unhandled error in event ${event.name} (${item})`,
+                  error as Error
+                );
+              }
+            };
+
             if (event.once) {
-              client.once(event.name, (...args) =>
-                event.execute(...args, client)
-              );
+              client.once(event.name, run);
             } else {
-              client.on(event.name, (...args) =>
-                event.execute(...args, client)
-              );
+              client.on(event.name, run);
             }
 
             Logger.debug(

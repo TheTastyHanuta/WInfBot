@@ -6,11 +6,10 @@ import {
   ButtonStyle,
   CommandInteraction,
   ComponentType,
-  User,
   MessageFlags,
 } from 'discord.js';
-import { MemberStats, IMemberStats } from '../../models/stats/memberStats';
-import { ServerStats, IServerStats } from '../../models/stats/serverStats';
+import { MemberStats } from '../../models/stats/memberStats';
+import { ServerStats } from '../../models/stats/serverStats';
 import { Colors } from '../../utils/colors';
 import { Logger } from '../../utils/logger';
 import { formatVoiceTime } from '../../utils/formatVoiceTime';
@@ -292,52 +291,6 @@ async function createServerLeaderboard(
   if (pageTextChannels.length === 0 && pageVoiceChannels.length === 0) {
     embed.setDescription('No channel statistics available yet!');
   } else {
-    let textDescription = '';
-    let voiceDescription = '';
-
-    // Text Channels (Left Side)
-    if (pageTextChannels.length > 0) {
-      textDescription = '**📝 Text Channels**\n';
-      for (let i = 0; i < pageTextChannels.length; i++) {
-        const channel = pageTextChannels[i];
-        const globalPosition = startIndex + i + 1;
-
-        let medal = '';
-        if (globalPosition === 1) medal = '🥇';
-        else if (globalPosition === 2) medal = '🥈';
-        else if (globalPosition === 3) medal = '🥉';
-        else medal = `**${globalPosition}.**`;
-
-        textDescription += `${medal} <#${channel.channelId}>\n`;
-        textDescription += `${channel.count.toLocaleString()} messages\n\n`;
-      }
-    } else if (page === 0) {
-      textDescription =
-        '**📝 Text Channels**\nNo text channel data available\n\n';
-    }
-
-    // Voice Channels (Right Side)
-    if (pageVoiceChannels.length > 0) {
-      voiceDescription = '**🔊 Voice Channels**\n';
-      for (let i = 0; i < pageVoiceChannels.length; i++) {
-        const channel = pageVoiceChannels[i];
-        const globalPosition = startIndex + i + 1;
-
-        let medal = '';
-        if (globalPosition === 1) medal = '🥇';
-        else if (globalPosition === 2) medal = '🥈';
-        else if (globalPosition === 3) medal = '🥉';
-        else medal = `**${globalPosition}.**`;
-
-        voiceDescription += `${medal} <#${channel.channelId}>\n`;
-        voiceDescription += `${formatVoiceTime(channel.count)}\n\n`;
-      }
-    } else if (page === 0) {
-      voiceDescription =
-        '**🔊 Voice Channels**\nNo voice channel data available\n\n';
-    }
-
-    // Combine descriptions side by side using fields
     embed.addFields(
       {
         name: '📝 Text Channels',
@@ -431,12 +384,6 @@ function createActionRow(
   const nextButton = new ButtonBuilder()
     .setCustomId('page_next')
     .setLabel('▶️')
-    .setStyle(ButtonStyle.Secondary)
-    .setDisabled(data.page >= data.totalPages - 1);
-
-  const lastButton = new ButtonBuilder()
-    .setCustomId('page_last')
-    .setLabel('⏭️')
     .setStyle(ButtonStyle.Secondary)
     .setDisabled(data.page >= data.totalPages - 1);
 

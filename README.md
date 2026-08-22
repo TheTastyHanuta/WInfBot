@@ -13,11 +13,11 @@ A Discord bot designed for the Wirtschaftsinformatik Discord Server at FAU Erlan
 
 ### Audit Logging
 
-- **Message Tracking**: Logs message edits, deletions with full context
-- **Moderation Events**: Tracks bans, kicks, and other moderation actions
-- **Channel Management**: Logs channel creation, deletion, and updates
-- **Role Monitoring**: Tracks role changes and permission updates
-- **Event Logging**: Comprehensive audit trail for server events
+- **Message Tracking**: Logs message edits, single and bulk deletions with full context, including who deleted them
+- **Moderation Events**: Tracks bans, kicks, and other moderation actions (not yet implemented)
+- **Channel Management**: Logs channel creation, deletion, and updates (not yet implemented)
+- **Role Monitoring**: Tracks role changes and permission updates (not yet implemented)
+- **Event Logging**: Comprehensive audit trail for server events (not yet implemented)
 
 ### Member Management
 

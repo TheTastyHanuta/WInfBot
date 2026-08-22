@@ -10,11 +10,6 @@ import {
   RoleSelectMenuBuilder,
   ChannelType,
   PermissionFlagsBits,
-  ComponentType,
-  StringSelectMenuInteraction,
-  ButtonInteraction,
-  ChannelSelectMenuInteraction,
-  RoleSelectMenuInteraction,
   InteractionCollector,
   MessageFlags,
 } from 'discord.js';

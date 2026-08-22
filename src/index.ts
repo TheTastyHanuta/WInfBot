@@ -43,7 +43,6 @@ const client = new Client({
     GatewayIntentBits.GuildInvites,
     GatewayIntentBits.GuildScheduledEvents,
     GatewayIntentBits.GuildWebhooks,
-    GatewayIntentBits.GuildVoiceStates,
     GatewayIntentBits.GuildMessageTyping,
   ],
   partials: [
@@ -60,7 +59,7 @@ const client = new Client({
 client.commands = new Collection();
 
 // Bot Ready Event
-client.once('ready', async () => {
+client.once('clientReady', async () => {
   const environment = isDevelopment ? 'DEVELOPMENT' : 'PRODUCTION';
   Logger.system(`${client.user?.tag} is online! (${environment})`);
 
@@ -95,13 +94,6 @@ client.once('ready', async () => {
   Logger.info(
     'BOT',
     `Bot version: ${process.env.npm_package_version} (${environment})`
-  );
-  const buildDate = new Date(process.env.npm_package_time_build || Date.now());
-  Logger.info(
-    'BOT',
-    `Build date: ${buildDate.toLocaleString('de-DE', {
-      timeZone: 'Europe/Berlin',
-    })}`
   );
 
   // Display watching status

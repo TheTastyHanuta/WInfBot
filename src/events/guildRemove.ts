@@ -9,6 +9,16 @@ async function handleGuildRemove(guild: Guild, client: Client) {
   const guildId = guild.id;
   const guildName = guild.name;
 
+  // Discord also emits guildDelete when a guild goes down in an outage. Wiping
+  // every setting and all stats in that case would be an irreversible mistake.
+  if (!guild.available) {
+    Logger.warn(
+      'GUILD_REMOVE',
+      `Guild ${guildName} (${guildId}) is unavailable (outage) - keeping its data`
+    );
+    return;
+  }
+
   Logger.info(
     'GUILD_REMOVE',
     `Bot was removed from server: ${guildName} (${guildId})`

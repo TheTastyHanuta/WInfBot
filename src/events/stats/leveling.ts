@@ -1,10 +1,6 @@
-import { Message, TextChannel, Client } from 'discord.js';
-import { MemberStats, IMemberStatsModel } from '../../models/stats/memberStats';
-import {
-  GuildSettings,
-  IGuildSettingsDocument,
-  IGuildSettings,
-} from '../../models/settings/settings';
+import { Message } from 'discord.js';
+import { MemberStats } from '../../models/stats/memberStats';
+import { GuildSettings, IGuildSettings } from '../../models/settings/settings';
 import { Logger } from '../../utils/logger';
 
 // Cooldown Map to prevent spam (userId -> last message timestamp)

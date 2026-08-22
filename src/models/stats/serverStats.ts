@@ -10,20 +10,6 @@ export interface IServerStats extends Document {
   // Instance methods with detailed descriptions
 
   /**
-   * Increments the message count for a specific text channel.
-   * @param channelId The ID of the text channel to increment.
-   * @param amount The amount to increment by (default is 1).
-   */
-  incrementTextChannel(channelId: string, amount?: number): void;
-
-  /**
-   * Increments the activity count for a specific voice channel.
-   * @param channelId The ID of the voice channel to increment.
-   * @param amount The amount to increment by (default is 1).
-   */
-  incrementVoiceChannel(channelId: string, amount?: number): void;
-
-  /**
    * Get the activity count for a specific text channel.
    * @param channelId The ID of the text channel.
    * @returns The number of messages in the specified text channel.
@@ -93,6 +79,25 @@ export interface IServerStatsModel extends Model<IServerStats> {
     guildId: string,
     updates: Partial<IServerStats>
   ): Promise<IServerStats>;
+
+  /**
+   * Atomically count one message for a text channel.
+   * @param guildId The ID of the guild
+   * @param channelId The ID of the text channel
+   */
+  recordTextMessage(guildId: string, channelId: string): Promise<void>;
+
+  /**
+   * Atomically add voice time for a voice channel.
+   * @param guildId The ID of the guild
+   * @param channelId The ID of the voice channel
+   * @param timeInSeconds The amount of time in seconds to add
+   */
+  recordVoiceTime(
+    guildId: string,
+    channelId: string,
+    timeInSeconds: number
+  ): Promise<void>;
 }
 
 const serverStatsSchema = new Schema<IServerStats>(
@@ -139,23 +144,30 @@ serverStatsSchema.statics.createOrUpdate = function (
   );
 };
 
+serverStatsSchema.statics.recordTextMessage = async function (
+  guildId: string,
+  channelId: string
+) {
+  await this.updateOne(
+    { guildId },
+    { $inc: { [`textChannels.${channelId}`]: 1 } },
+    { upsert: true }
+  );
+};
+
+serverStatsSchema.statics.recordVoiceTime = async function (
+  guildId: string,
+  channelId: string,
+  timeInSeconds: number
+) {
+  await this.updateOne(
+    { guildId },
+    { $inc: { [`voiceChannels.${channelId}`]: timeInSeconds } },
+    { upsert: true }
+  );
+};
+
 // Instance methods
-serverStatsSchema.methods.incrementTextChannel = function (
-  channelId: string,
-  amount: number = 1
-) {
-  const currentCount = this.textChannels.get(channelId) || 0;
-  this.textChannels.set(channelId, currentCount + amount);
-};
-
-serverStatsSchema.methods.incrementVoiceChannel = function (
-  channelId: string,
-  amount: number = 1
-) {
-  const currentCount = this.voiceChannels.get(channelId) || 0;
-  this.voiceChannels.set(channelId, currentCount + amount);
-};
-
 serverStatsSchema.methods.getTextChannelStats = function (
   channelId: string
 ): number {

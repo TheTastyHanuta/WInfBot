@@ -7,10 +7,11 @@ export const data = new SlashCommandBuilder()
 export async function execute(interaction: CommandInteraction) {
   const sent = await interaction.reply({
     content: 'Pinging...',
-    fetchReply: true,
+    withResponse: true,
   });
 
-  const roundtripLatency = sent.createdTimestamp - interaction.createdTimestamp;
+  const sentTimestamp = sent.resource?.message?.createdTimestamp ?? Date.now();
+  const roundtripLatency = sentTimestamp - interaction.createdTimestamp;
   const websocketLatency = interaction.client.ws.ping;
 
   await interaction.editReply({

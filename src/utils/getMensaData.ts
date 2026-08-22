@@ -1,6 +1,3 @@
-import * as fs from 'fs';
-import * as path from 'path';
-import fetch from 'node-fetch';
 import { parseStringPromise } from 'xml2js';
 import moment = require('moment-timezone');
 import { Logger } from './logger';
@@ -342,7 +339,7 @@ export function deduplicateMeals(meals: MensaMeal[]): MensaMeal[] {
 
     Logger.warn(
       'getMensaData',
-      `Duplicate skipped: ${meal.name} on ${meal.date}`
+      `Duplicate dropped: ${meal.name} on ${meal.date}`
     );
   }
 
@@ -432,30 +429,4 @@ export async function getSuedMensaData(): Promise<MensaMeal[]> {
   return getMensaData(
     'https://www.max-manager.de/daten-extern/sw-erlangen-nuernberg/xml/mensa-sued.xml'
   );
-}
-
-/**
- * Saves mensa data to XML file (optional functionality)
- */
-export async function saveMensaDataToFile(
-  url: string,
-  filename: string
-): Promise<void> {
-  try {
-    const response = await fetch(url);
-    const xmlData = await response.text();
-
-    const outputDir = path.join(__dirname, '..', '..', 'data');
-    if (!fs.existsSync(outputDir)) {
-      fs.mkdirSync(outputDir, { recursive: true });
-    }
-
-    const filePath = path.join(outputDir, filename);
-    fs.writeFileSync(filePath, xmlData, 'utf8');
-
-    console.log(`Mensa data saved to: ${filePath}`);
-  } catch (error) {
-    console.error('Error saving mensa data:', error);
-    throw error;
-  }
 }

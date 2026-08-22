@@ -1,8 +1,5 @@
 import { Client, GuildMember } from 'discord.js';
-import {
-  GuildSettings,
-  IGuildSettingsDocument,
-} from '../../models/settings/settings';
+import { GuildSettings } from '../../models/settings/settings';
 import { Logger } from '../../utils/logger';
 import { OpenAI } from 'openai';
 import config from '../../utils/config';
@@ -23,6 +20,23 @@ async function handleGuildMemberAdd(member: GuildMember, client: Client) {
     const guildSettings = await GuildSettings.findByGuildId(guildId);
 
     if (guildSettings.getSetting('welcomeMessages.enabled')) {
+      // Resolve the target channel first: without one nothing can be sent, and
+      // generating an AI message below would be paid for and then discarded.
+      const welcomeChannelId = guildSettings.getSetting(
+        'welcomeMessages.channel'
+      );
+      const targetChannel = welcomeChannelId
+        ? member.guild.channels.cache.get(welcomeChannelId)
+        : null;
+
+      if (!targetChannel || !targetChannel.isTextBased()) {
+        Logger.warn(
+          'GUILD_MEMBER_ADD',
+          `Welcome messages are enabled for ${guildName} (${guildId}) but no usable channel is configured`
+        );
+        return;
+      }
+
       // Send welcome message
       let welcomeMessage = guildSettings
         .getSetting('welcomeMessages.message')
@@ -105,29 +119,20 @@ async function handleGuildMemberAdd(member: GuildMember, client: Client) {
         }
       }
 
-      let targetChannel = null;
-
-      if (guildSettings.getSetting('welcomeMessages.channel')) {
-        // Use the designated welcome channel
-        targetChannel = member.guild.channels.cache.get(
-          guildSettings.getSetting('welcomeMessages.channel')
+      try {
+        // The message contains a member-controlled username, so restrict
+        // mentions to users - a member called "@everyone" must not be able to
+        // make the bot ping the whole server.
+        await targetChannel.send({
+          content: welcomeMessage,
+          allowedMentions: { parse: ['users'] },
+        });
+      } catch (error) {
+        Logger.error(
+          'GUILD_MEMBER_ADD',
+          `Failed to send welcome message to channel ${targetChannel.id}`,
+          error as Error
         );
-
-        if (
-          targetChannel &&
-          targetChannel.isTextBased() &&
-          'send' in targetChannel
-        ) {
-          try {
-            await targetChannel.send(welcomeMessage);
-          } catch (error) {
-            Logger.error(
-              'GUILD_MEMBER_ADD',
-              `Failed to send welcome message to channel ${targetChannel.id}`,
-              error as Error
-            );
-          }
-        }
       }
     }
   } catch (error) {

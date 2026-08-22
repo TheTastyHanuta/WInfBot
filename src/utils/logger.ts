@@ -29,14 +29,9 @@ export class Logger {
   private static readonly ERROR_DEDUPE_MS = 60_000;
   private static lastSentByKey = new Map<string, number>();
 
-  // Default timezone - from the environment, or from setTimezone at runtime
-  // (which wins). Lazy for the same reason as the error target above
-  private static timezoneOverride: string | null = null;
-
+  // Read lazily so a LOG_TIMEZONE set after this module loads still applies
   private static get timezone(): string {
-    return (
-      Logger.timezoneOverride || process.env.LOG_TIMEZONE || 'Europe/Berlin'
-    );
+    return process.env.LOG_TIMEZONE || 'Europe/Berlin';
   }
 
   private static formatMessage(
@@ -234,42 +229,5 @@ export class Logger {
    */
   static system(message: string): void {
     Logger.info('SYSTEM', message);
-  }
-
-  /**
-   * Set log level manually
-   */
-  static setLogLevel(level: LogLevel): void {
-    Logger.logLevel = level;
-  }
-
-  /**
-   * Get current environment status
-   */
-  static isDev(): boolean {
-    return Logger.isDevelopment;
-  }
-
-  /**
-   * Set timezone for logging timestamps
-   */
-  static setTimezone(timezone: string): void {
-    // Validate timezone
-    if (moment.tz.zone(timezone)) {
-      Logger.timezoneOverride = timezone;
-      Logger.info('LOGGER', `Timezone set to: ${timezone}`);
-    } else {
-      Logger.warn(
-        'LOGGER',
-        `Invalid timezone: ${timezone}. Using default: ${Logger.timezone}`
-      );
-    }
-  }
-
-  /**
-   * Get current timezone
-   */
-  static getTimezone(): string {
-    return Logger.timezone;
   }
 }

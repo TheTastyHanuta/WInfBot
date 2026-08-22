@@ -115,9 +115,11 @@ export interface IGuildSettingsDocument extends Document {
 // Model Interface
 export interface IGuildSettingsModel extends Model<IGuildSettingsDocument> {
   /**
-   * Find guild settings by guild ID
+   * Find guild settings by guild ID, creating them with the defaults if this
+   * guild has none yet (which happens for every guild the bot was added to
+   * while it was offline).
    * @param guildId The ID of the guild
-   * @return The guild settings document or null if not found
+   * @return The guild settings document
    */
   findByGuildId(guildId: string): Promise<IGuildSettingsDocument>;
   /**
@@ -186,8 +188,13 @@ const guildSettingsSchema = new Schema<IGuildSettingsDocument>(
 );
 
 // Static Methods
-guildSettingsSchema.statics.findByGuildId = function (guildId: string) {
-  return this.findOne({ guildId });
+// Read first so the common case stays a plain query, and only fall back to the
+// upsert the first time a guild is seen. Callers rely on this never being null.
+guildSettingsSchema.statics.findByGuildId = async function (guildId: string) {
+  const model = this as unknown as IGuildSettingsModel;
+  return (
+    (await model.findOne({ guildId })) ?? model.findOrCreateByGuildId(guildId)
+  );
 };
 
 guildSettingsSchema.statics.findOrCreateByGuildId = async function (

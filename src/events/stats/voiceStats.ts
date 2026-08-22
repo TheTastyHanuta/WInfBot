@@ -1,4 +1,4 @@
-import { VoiceState, Client } from 'discord.js';
+import { VoiceState } from 'discord.js';
 import { VoiceActivity } from '../../models/stats/voiceActivity';
 import { MemberStats } from '../../models/stats/memberStats';
 import { ServerStats } from '../../models/stats/serverStats';
@@ -84,17 +84,8 @@ async function handleUserLeftVoice(
 
   // Only update if the duration is positive
   if (duration > 0) {
-    // Update member stats using upsert to avoid duplicate key errors
-    let memberStats = await MemberStats.createOrUpdate(guildId, userId);
-
-    memberStats.addVoiceTime(channelId, duration);
-    await memberStats.save();
-
-    // Update server stats using upsert to avoid duplicate key errors
-    let serverStats = await ServerStats.createOrUpdate(guildId, {});
-
-    serverStats.incrementVoiceChannel(channelId, duration);
-    await serverStats.save();
+    await MemberStats.recordVoiceTime(guildId, userId, channelId, duration);
+    await ServerStats.recordVoiceTime(guildId, channelId, duration);
   }
 
   // Remove the voice activity record after processing
@@ -121,17 +112,13 @@ async function handleUserSwitchedChannels(
 
     // Only update if the duration is positive
     if (duration > 0) {
-      // Update member stats for old channel using upsert to avoid duplicate key errors
-      let memberStats = await MemberStats.createOrUpdate(guildId, userId);
-
-      memberStats.addVoiceTime(oldChannelId, duration);
-      await memberStats.save();
-
-      // Update server stats for old channel using upsert to avoid duplicate key errors
-      let serverStats = await ServerStats.createOrUpdate(guildId, {});
-
-      serverStats.incrementVoiceChannel(oldChannelId, duration);
-      await serverStats.save();
+      await MemberStats.recordVoiceTime(
+        guildId,
+        userId,
+        oldChannelId,
+        duration
+      );
+      await ServerStats.recordVoiceTime(guildId, oldChannelId, duration);
     }
   }
 

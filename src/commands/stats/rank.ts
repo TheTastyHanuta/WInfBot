@@ -10,7 +10,6 @@ import {
   User,
   MessageFlags,
   GuildMember,
-  Client,
 } from 'discord.js';
 import { Profile } from 'discord-arts';
 import { MemberStats } from '../../models/stats/memberStats';
